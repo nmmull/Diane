@@ -1,0 +1,50 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Diane Playground</title>
+  <script src="diane.js"></script>
+  <link rel="stylesheet" type="text/css" href="dianeStyle.css" />
+</head>
+
+<body>
+  <div tabindex="0" id="playground"></div>
+  <script>
+  var app = Elm.Main.init({
+      node: document.getElementById('playground'),
+      flags: `0 @X
+1 @Y
+
+def FIB {
+  dup 0 = ? {
+    drop X
+  } else {
+    X Y +
+    Y
+    @X @Y
+    1 swap -
+    #FIB
+  }
+}
+
+6 #FIB print
+
+!X !Y !FIB
+
+def FIBR {
+  dup 0 = ? {
+  } else { dup 1 = ? {
+  } else {
+    dup 1 swap - #FIBR
+    swap 2 swap - #FIBR
+    +
+  }}
+
+}
+
+6 #FIBR print
+
+!FIBR`
+  });
+  </script>
+</body>
+</html>

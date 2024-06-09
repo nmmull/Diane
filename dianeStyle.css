@@ -1,0 +1,125 @@
+#view {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow-y: hidden;
+}
+
+#editor-window {
+    width: 50%;
+    height: calc(100% - 40px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-top-style: none;
+    border-bottom-style: none;
+    border-left-style: none;
+    border-right-style: solid;
+    border-width: 2px;
+}
+
+#editor {
+    width: 100%;
+    padding: 10px;
+    height: 100%;
+    font-family: "Courier";
+    font-size: 18px;
+    resize: none;
+    box-sizing: border-box;
+    border-style: none;
+}
+
+#save-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#button-bar {
+    width: 50%;
+    height: 40px;
+    position: absolute;
+    top: calc(100% - 40px);
+    left: 0;
+    border-top-style: solid;
+    border-left-style: none;
+    border-right-style: solid;
+    border-bottom-style: none;
+    border-width: 2px;
+    overflow-y: scroll;
+}
+
+#buttons {
+    padding-top:5px;
+}
+
+button {
+    background:none;
+    border:none;
+    margin:0;
+    padding-left:10px;
+    padding-right:10px;
+    padding-top:0;
+    padding-bottom:0;
+    cursor: pointer;
+    font-family: "Courier";
+    font-size: 18px;
+    text-decoration: underline;
+}
+
+#console-window {
+    width: calc(50% - 2px);
+    height: 30%;
+    position: absolute;
+    top: 70%;
+    left: calc(50% + 2px);
+    border-top-style: solid;
+    border-bottom-style: none;
+    border-left-style: none;
+    border-right-style: none;
+    border-width: 2px;
+    overflow-y: scroll;
+}
+
+#console {
+    margin: 10px;
+    font-family: "Courier";
+    font-size: 18px;
+}
+
+#clear-console {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#viz-window {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 70%;
+}
+
+#viz {
+    margin: 15px;
+    font-family: "Courier";
+    font-size: 18px;
+}
+
+#clear-data {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+ul {
+    padding-left: 24px;
+    list-style-type:"≫ ";
+}
+
+:focus {
+    outline: thin dotted;
+}
