@@ -5337,9 +5337,9 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$element = _Browser_element;
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Diane$initEnv = $elm$core$Dict$empty;
+var $author$project$Diane$emptyEnv = $elm$core$Dict$empty;
 var $author$project$Main$initConfig = function (prog) {
-	return {env: $author$project$Diane$initEnv, program: prog, stack: _List_Nil, trace: _List_Nil};
+	return {env: $author$project$Diane$emptyEnv, program: prog, stack: _List_Nil, trace: _List_Nil};
 };
 var $author$project$Main$initModel = function (prog) {
 	return {
@@ -5789,10 +5789,10 @@ var $author$project$Main$subscriptions = function (_v0) {
 var $author$project$Diane$done = function (c) {
 	return $elm$core$String$isEmpty(c.program);
 };
-var $author$project$Main$mkErrMsg = function (s) {
+var $author$project$Diane$mkErrMsg = function (s) {
 	return 'ERROR: ' + s;
 };
-var $author$project$Main$errMsg = function (e) {
+var $author$project$Diane$errMsg = function (e) {
 	var m = function () {
 		switch (e.$) {
 			case 'StackUnderflow':
@@ -5805,7 +5805,7 @@ var $author$project$Main$errMsg = function (e) {
 				return 'Invalid lookup';
 		}
 	}();
-	return $author$project$Main$mkErrMsg(m);
+	return $author$project$Diane$mkErrMsg(m);
 };
 var $author$project$Diane$InvalidCall = {$: 'InvalidCall'};
 var $author$project$Diane$InvalidLookup = {$: 'InvalidLookup'};
@@ -7867,13 +7867,13 @@ var $author$project$Main$step = F2(
 					var e = _v1.a;
 					return A2(
 						$author$project$Main$panic,
-						$author$project$Main$errMsg(e),
+						$author$project$Diane$errMsg(e),
 						model);
 				}
 			} else {
 				return A2(
 					$author$project$Main$panic,
-					$author$project$Main$mkErrMsg('Parse error'),
+					$author$project$Diane$mkErrMsg('Parse error'),
 					model);
 			}
 		};
@@ -7909,7 +7909,7 @@ var $author$project$Main$reset = function (m) {
 		{
 			config: _Utils_update(
 				c,
-				{env: $author$project$Diane$initEnv, program: m.savedProgram, stack: _List_Nil}),
+				{env: $author$project$Diane$emptyEnv, program: m.savedProgram, stack: _List_Nil}),
 			going: false
 		});
 };
@@ -8002,7 +8002,7 @@ var $author$project$Main$update = F2(
 						{
 							config: _Utils_update(
 								c,
-								{env: $author$project$Diane$initEnv, stack: _List_Nil}),
+								{env: $author$project$Diane$emptyEnv, stack: _List_Nil}),
 							history: _List_Nil
 						}));
 		}
@@ -8195,7 +8195,7 @@ var $author$project$Main$shortcuts = function () {
 			A2($elm$json$Json$Decode$andThen, succeeded, $elm$html$Html$Events$keyCode)));
 }();
 var $author$project$Main$ClearData = {$: 'ClearData'};
-var $author$project$Main$valString = function (v) {
+var $author$project$Diane$valString = function (v) {
 	if (v.$ === 'Number') {
 		var n = v.a;
 		return $elm$core$String$fromInt(n);
@@ -8214,7 +8214,7 @@ var $author$project$Main$envHtmls = function (e) {
 			var rest = bs.b;
 			return A2(
 				$elm$core$List$cons,
-				x + (' ↦ ' + $author$project$Main$valString(val)),
+				x + (' ↦ ' + $author$project$Diane$valString(val)),
 				go(rest));
 		}
 	};
@@ -8241,7 +8241,7 @@ var $elm$core$Dict$isEmpty = function (dict) {
 	}
 };
 var $elm$html$Html$li = _VirtualDom_node('li');
-var $author$project$Main$stackStr = function (s) {
+var $author$project$Diane$stackStr = function (s) {
 	if (!s.b) {
 		return '⊥';
 	} else {
@@ -8282,7 +8282,7 @@ var $author$project$Main$viz = function (m) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text(
-								$author$project$Main$stackStr(m.config.stack))
+								$author$project$Diane$stackStr(m.config.stack))
 							])),
 						A2(
 						$elm$html$Html$h3,

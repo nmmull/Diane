@@ -1,16 +1,14 @@
 port module Main exposing (..)
 
-import Diane exposing (..)
 import MyParser exposing (parse)
-
+import Diane exposing (..)
 import Dict exposing (Dict)
-
-import Json.Decode as Decode
 import Browser
+import Time
+import Json.Decode as Decode
 import Html exposing (Html, div, text, textarea, button)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, keyCode, preventDefaultOn)
-import Time
 
 type alias Model =
   { config : Config
@@ -18,20 +16,6 @@ type alias Model =
   , savedProgram : Prog
   , history : List Config
   }
-
-mkErrMsg : String -> String
-mkErrMsg s = "ERROR: " ++ s
-
-errMsg : Error -> String
-errMsg e =
-  let
-    m =
-      case e of
-        StackUnderflow -> "Stack underflow"
-        UnknownVariable -> "Unknown variable"
-        InvalidCall -> "Invalid call"
-        InvalidLookup -> "Invalid lookup"
-  in mkErrMsg m
 
 panic : String -> Model -> Model
 panic msg m =
@@ -76,7 +60,7 @@ reset : Model -> Model
 reset m =
   let c = m.config in
   { m
-  | config = { c | stack = [], program = m.savedProgram, env = initEnv }
+  | config = { c | stack = [], program = m.savedProgram, env = emptyEnv }
   , going = False
   }
 
@@ -93,7 +77,7 @@ undo m =
 initConfig prog =
   { stack = []
   , program = prog
-  , env = initEnv
+  , env = emptyEnv
   , trace = []
   }
 
@@ -151,7 +135,7 @@ update msg m =
       mk { m | config = { c | trace = [] } }
     ClearData ->
       let c = m.config in
-      mk { m | config = { c | stack = [], env = initEnv }, history = [] }
+      mk { m | config = { c | stack = [], env = emptyEnv }, history = [] }
 
 succeededIfKey : Int -> Int -> Decode.Decoder Int
 succeededIfKey n key =
@@ -236,11 +220,6 @@ buttonBar m =
         [ onClick Reset
         , disabled (m.config.program == m.savedProgram)
         ] [ text "reset" ]
-      -- , button
-      --   [ onClick Toggle
-      --   , disabled (done m.config)
-      --   ]
-      --   [ text (if m.going then "stop" else "play") ]
       ]
     ]
 
@@ -258,26 +237,6 @@ console m =
       [ text "clear"
       ]
     ]
-
-stackStr : List Int -> String
-stackStr s =
-  case s of
-    [] -> "⊥"
-    _ -> String.join " :: " (List.map String.fromInt s) ++ " :: ⊥"
-
-valString : Value -> String
-valString v =
-    case v of
-        Number n -> String.fromInt n
-        Subroutine _ -> "<function>"
-
-envString : Env -> String
-envString e =
-    let go bs = case bs of
-                    [] -> []
-                    (x, val) :: rest -> (x ++ " ↦ " ++ valString val) :: go rest
-    in
-    String.join "\n" (go (Dict.toList e))
 
 envHtmls : Env -> List (Html Msg)
 envHtmls e =

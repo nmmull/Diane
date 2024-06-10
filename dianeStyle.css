@@ -17,7 +17,7 @@
     border-bottom-style: none;
     border-left-style: none;
     border-right-style: solid;
-    border-width: 2px;
+    border-width: 1px;
 }
 
 #editor {
@@ -47,7 +47,7 @@
     border-left-style: none;
     border-right-style: solid;
     border-bottom-style: none;
-    border-width: 2px;
+    border-width: 1px;
     overflow-y: scroll;
 }
 
@@ -70,16 +70,16 @@ button {
 }
 
 #console-window {
-    width: calc(50% - 2px);
+    width: calc(50% - 1px);
     height: 30%;
     position: absolute;
     top: 70%;
-    left: calc(50% + 2px);
+    left: calc(50% + 1px);
     border-top-style: solid;
     border-bottom-style: none;
     border-left-style: none;
     border-right-style: none;
-    border-width: 2px;
+    border-width: 1px;
     overflow-y: scroll;
 }
 

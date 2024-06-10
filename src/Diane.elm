@@ -21,19 +21,60 @@ type Error
   | InvalidCall
   | InvalidLookup
 
+mkErrMsg : String -> String
+mkErrMsg s = "ERROR: " ++ s
+
+errMsg : Error -> String
+errMsg e =
+  let
+    m =
+      case e of
+        StackUnderflow -> "Stack underflow"
+        UnknownVariable -> "Unknown variable"
+        InvalidCall -> "Invalid call"
+        InvalidLookup -> "Invalid lookup"
+  in mkErrMsg m
+
+type alias Stack = List Int
+
+emptyStack = []
+
+stackStr : Stack -> String
+stackStr s =
+  case s of
+    [] -> "⊥"
+    _ -> String.join " :: " (List.map String.fromInt s) ++ " :: ⊥"
+
 type Value
   = Number Int
   | Subroutine Prog
+
+valString : Value -> String
+valString v =
+  case v of
+    Number n -> String.fromInt n
+    Subroutine _ -> "<function>"
+
 
 type alias Env = Dict Ident Value
 
 assign = Dict.insert
 unassign = Dict.remove
 lookup = Dict.get
-initEnv = Dict.empty
+emptyEnv = Dict.empty
+
+envString : Env -> String
+envString e =
+  let
+    go bs =
+      case bs of
+        [] -> []
+        (x, val) :: rest -> (x ++ " ↦ " ++ valString val) :: go rest
+  in
+  String.join "\n" (go (Dict.toList e))
 
 type alias Config =
-  { stack : List Int
+  { stack : Stack
   , program : Prog
   , env : Env
   , trace : List String
