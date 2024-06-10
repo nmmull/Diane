@@ -2,6 +2,14 @@ module Diane exposing (..)
 
 import Dict exposing (Dict)
 
+stackStr : List Int -> String
+stackStr s =
+  case s of
+    [] -> "⊥"
+    _ -> String.join " :: " (List.map String.fromInt s) ++ " :: ⊥"
+
+-- PROGRAMS
+
 type alias Prog = String
 type alias Ident = String
 
@@ -14,6 +22,8 @@ type Command
   | If Prog Prog | While Prog Prog
   | Fun Ident Prog | Call Ident
   | Lookup Ident | Assign Ident | Unassign Ident
+
+-- ERRORS
 
 type Error
   = StackUnderflow
@@ -35,15 +45,7 @@ errMsg e =
         InvalidLookup -> "Invalid lookup"
   in mkErrMsg m
 
-type alias Stack = List Int
-
-emptyStack = []
-
-stackStr : Stack -> String
-stackStr s =
-  case s of
-    [] -> "⊥"
-    _ -> String.join " :: " (List.map String.fromInt s) ++ " :: ⊥"
+-- VALUES
 
 type Value
   = Number Int
@@ -55,6 +57,7 @@ valString v =
     Number n -> String.fromInt n
     Subroutine _ -> "<function>"
 
+-- ENVIRONMENTS
 
 type alias Env = Dict Ident Value
 
@@ -73,20 +76,24 @@ envString e =
   in
   String.join "\n" (go (Dict.toList e))
 
+-- CONFIGURATIONS
+
 type alias Config =
-  { stack : Stack
+  { stack : List Int
   , program : Prog
   , env : Env
-  , trace : List String
   }
 
-evalCommand : Command -> Config -> Result Error Config
-evalCommand com ({stack, program, env, trace} as config) =
-  let mk s = Ok { config | stack = s } in
+-- EVALUATION
+
+evalCommand : Command -> Config -> Result Error ( Config, Maybe String )
+evalCommand com ({stack, program, env} as config) =
+  let mkr s e p = Ok ( { config | stack = s, env = e, program = p }, Nothing ) in
+  let mk s = mkr s env program in
   let mkBool b s = mk (if b then 1 :: s else 0 :: s) in
-  let mkTrace s msg = Ok { config | stack = s, trace = msg :: trace } in
-  let mkProg s p = Ok { config | stack = s, program = p ++ "\n" ++ program } in
-  let mkEnv s e = Ok { config | env = e, stack = s } in
+  let mkTrace s msg = Ok ( { config | stack = s }, Just msg ) in
+  let mkProg s p = mkr s env (p ++ "\n" ++ program) in
+  let mkEnv s e = mkr s e program in
   case ( com, stack ) of
     ( Push n, s ) -> mk (n :: s)
     ( Drop, _ :: s ) -> mk s

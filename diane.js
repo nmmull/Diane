@@ -5341,9 +5341,8 @@ var $author$project$Main$Static = function (a) {
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Diane$emptyEnv = $elm$core$Dict$empty;
-var $author$project$Diane$emptyStack = _List_Nil;
 var $author$project$Main$initConfig = function (prog) {
-	return {env: $author$project$Diane$emptyEnv, program: prog, stack: $author$project$Diane$emptyStack, trace: _List_Nil};
+	return {env: $author$project$Diane$emptyEnv, program: prog, stack: _List_Nil};
 };
 var $author$project$Main$initModel = function (prog) {
 	return {
@@ -5351,8 +5350,12 @@ var $author$project$Main$initModel = function (prog) {
 		dragState: $author$project$Main$Static(0.5),
 		dragStateY: $author$project$Main$Static(0.7),
 		going: false,
-		history: _List_Nil,
-		savedProgram: prog
+		history: _List_fromArray(
+			[
+				$author$project$Main$initConfig(prog)
+			]),
+		savedProgram: prog,
+		trace: _List_Nil
 	};
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -6482,12 +6485,17 @@ var $author$project$Diane$evalCommand = F2(
 		var stack = config.stack;
 		var program = config.program;
 		var env = config.env;
-		var trace = config.trace;
+		var mkr = F3(
+			function (s, e, p) {
+				return $elm$core$Result$Ok(
+					_Utils_Tuple2(
+						_Utils_update(
+							config,
+							{env: e, program: p, stack: s}),
+						$elm$core$Maybe$Nothing));
+			});
 		var mk = function (s) {
-			return $elm$core$Result$Ok(
-				_Utils_update(
-					config,
-					{stack: s}));
+			return A3(mkr, s, env, program);
 		};
 		var mkBool = F2(
 			function (b, s) {
@@ -6497,26 +6505,19 @@ var $author$project$Diane$evalCommand = F2(
 		var mkTrace = F2(
 			function (s, msg) {
 				return $elm$core$Result$Ok(
-					_Utils_update(
-						config,
-						{
-							stack: s,
-							trace: A2($elm$core$List$cons, msg, trace)
-						}));
+					_Utils_Tuple2(
+						_Utils_update(
+							config,
+							{stack: s}),
+						$elm$core$Maybe$Just(msg)));
 			});
 		var mkProg = F2(
 			function (s, p) {
-				return $elm$core$Result$Ok(
-					_Utils_update(
-						config,
-						{program: p + ('\n' + program), stack: s}));
+				return A3(mkr, s, env, p + ('\n' + program));
 			});
 		var mkEnv = F2(
 			function (s, e) {
-				return $elm$core$Result$Ok(
-					_Utils_update(
-						config,
-						{env: e, stack: s}));
+				return A3(mkr, s, e, program);
 			});
 		var _v0 = _Utils_Tuple2(com, stack);
 		_v0$29:
@@ -6932,20 +6933,6 @@ var $author$project$Diane$evalCommand = F2(
 			}
 		}
 		return $elm$core$Result$Err($author$project$Diane$StackUnderflow);
-	});
-var $author$project$Main$panic = F2(
-	function (msg, m) {
-		var c = m.config;
-		return _Utils_update(
-			m,
-			{
-				config: _Utils_update(
-					c,
-					{
-						trace: A2($elm$core$List$cons, msg, c.trace)
-					}),
-				going: false
-			});
 	});
 var $author$project$MyParser$Output = F2(
 	function (command, unconsumed) {
@@ -8137,42 +8124,78 @@ var $author$project$Main$step = F2(
 	function (updateHistory, m) {
 		var go = function (model) {
 			var config = model.config;
+			var trace = model.trace;
 			var history = model.history;
-			var _v0 = $author$project$MyParser$parse(config.program);
-			if (_v0.$ === 'Ok') {
-				var command = _v0.a.command;
-				var unconsumed = _v0.a.unconsumed;
-				var _v1 = A2(
+			var _v1 = $author$project$MyParser$parse(config.program);
+			if (_v1.$ === 'Ok') {
+				var command = _v1.a.command;
+				var unconsumed = _v1.a.unconsumed;
+				var _v2 = A2(
 					$author$project$Diane$evalCommand,
 					command,
 					_Utils_update(
 						config,
 						{program: unconsumed}));
-				if (_v1.$ === 'Ok') {
-					var nextConfig = _v1.a;
+				if (_v2.$ === 'Ok') {
+					var _v3 = _v2.a;
+					var nextConfig = _v3.a;
+					var mmsg = _v3.b;
 					return _Utils_update(
 						model,
 						{
 							config: nextConfig,
-							history: updateHistory ? A2($elm$core$List$cons, config, history) : history
+							history: updateHistory ? A2($elm$core$List$cons, nextConfig, history) : history,
+							trace: function () {
+								if (mmsg.$ === 'Just') {
+									var msg = mmsg.a;
+									return A2($elm$core$List$cons, msg, trace);
+								} else {
+									return trace;
+								}
+							}()
 						});
 				} else {
-					var e = _v1.a;
-					return A2(
-						$author$project$Main$panic,
-						$author$project$Diane$errMsg(e),
-						model);
+					var e = _v2.a;
+					return _Utils_update(
+						m,
+						{
+							trace: A2(
+								$elm$core$List$cons,
+								$author$project$Diane$errMsg(e),
+								trace)
+						});
 				}
 			} else {
-				return A2(
-					$author$project$Main$panic,
-					$author$project$Diane$mkErrMsg('Parse error'),
-					model);
+				return _Utils_update(
+					m,
+					{
+						trace: A2(
+							$elm$core$List$cons,
+							$author$project$Diane$mkErrMsg('Parse error'),
+							trace)
+					});
 			}
 		};
-		return $author$project$Diane$done(m.config) ? _Utils_update(
-			m,
-			{going: false}) : go(m);
+		if ($author$project$Diane$done(m.config)) {
+			return _Utils_update(
+				m,
+				{going: false});
+		} else {
+			var next = function () {
+				var _v0 = m.history;
+				if (!_v0.b) {
+					return m;
+				} else {
+					var last = _v0.a;
+					return (!_Utils_eq(m.config.program, last.program)) ? _Utils_update(
+						m,
+						{
+							history: A2($elm$core$List$cons, m.config, m.history)
+						}) : m;
+				}
+			}();
+			return go(next);
+		}
 	});
 var $author$project$Main$eval = function (model) {
 	var go = function (m) {
@@ -8194,17 +8217,14 @@ var $author$project$Main$eval = function (model) {
 	return _Utils_update(
 		out,
 		{
-			history: A2($elm$core$List$cons, model.config, model.history)
+			history: A2($elm$core$List$cons, out.config, model.history)
 		});
 };
 var $author$project$Main$reset = function (m) {
-	var c = m.config;
 	return _Utils_update(
 		m,
 		{
-			config: _Utils_update(
-				c,
-				{env: $author$project$Diane$emptyEnv, program: m.savedProgram, stack: _List_Nil}),
+			config: $author$project$Main$initConfig(m.savedProgram),
 			going: false
 		});
 };
@@ -8220,19 +8240,19 @@ var $author$project$Main$toFraction = function (s) {
 var $author$project$Main$undo = function (m) {
 	var c = m.config;
 	var _v0 = m.history;
-	if (!_v0.b) {
-		return m;
-	} else {
-		var old = _v0.a;
-		var rest = _v0.b;
+	if (_v0.b && _v0.b.b) {
+		var curr = _v0.a;
+		var _v1 = _v0.b;
+		var last = _v1.a;
+		var rest = _v1.b;
 		return _Utils_update(
 			m,
 			{
-				config: _Utils_update(
-					c,
-					{env: old.env, program: old.program, stack: old.stack}),
-				history: rest
+				config: last,
+				history: A2($elm$core$List$cons, last, rest)
 			});
+	} else {
+		return $author$project$Main$reset(m);
 	}
 };
 var $author$project$Main$update = F2(
@@ -8282,32 +8302,27 @@ var $author$project$Main$update = F2(
 						{
 							config: _Utils_update(
 								c,
-								{program: p}),
-							history: _List_Nil
+								{program: p})
 						}));
 			case 'Tick':
 				return m.going ? mk(
 					A2($author$project$Main$step, false, m)) : mk(m);
 			case 'ClearConsole':
-				var c = m.config;
 				return mk(
 					_Utils_update(
 						m,
-						{
-							config: _Utils_update(
-								c,
-								{trace: _List_Nil})
-						}));
+						{trace: _List_Nil}));
 			case 'ClearData':
 				var c = m.config;
+				var newC = _Utils_update(
+					c,
+					{env: $author$project$Diane$emptyEnv, stack: _List_Nil});
 				return mk(
 					_Utils_update(
 						m,
 						{
-							config: _Utils_update(
-								c,
-								{env: $author$project$Diane$emptyEnv, stack: _List_Nil}),
-							history: _List_Nil
+							config: newC,
+							history: A2($elm$core$List$cons, newC, m.history)
 						}));
 			case 'DragStart':
 				return mk(
@@ -8441,7 +8456,7 @@ var $author$project$Main$buttonBar = function (m) {
 							[
 								$elm$html$Html$Events$onClick($author$project$Main$Undo),
 								$elm$html$Html$Attributes$disabled(
-								$elm$core$List$isEmpty(m.history))
+								$elm$core$List$length(m.history) <= 1)
 							]),
 						_List_fromArray(
 							[
@@ -8533,7 +8548,7 @@ var $author$project$Main$console = function (m) {
 						A2(
 							$elm$core$List$map,
 							line,
-							$elm$core$List$reverse(m.config.trace)))
+							$elm$core$List$reverse(m.trace)))
 					])),
 				A2(
 				$elm$html$Html$button,
@@ -8541,7 +8556,7 @@ var $author$project$Main$console = function (m) {
 					[
 						$elm$html$Html$Attributes$id('clear-console'),
 						$elm$html$Html$Attributes$disabled(
-						$elm$core$List$isEmpty(m.config.trace)),
+						$elm$core$List$isEmpty(m.trace)),
 						$elm$html$Html$Events$onClick($author$project$Main$ClearConsole)
 					]),
 				_List_fromArray(

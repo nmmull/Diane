@@ -18,6 +18,7 @@ type alias Model =
   , history : List Config
   , dragState : DragState
   , dragStateY : DragState
+  , trace : List String
   }
 
 type DragState
@@ -42,35 +43,40 @@ isMoving m =
     Moving _ -> True
     _ -> False
 
-panic : String -> Model -> Model
-panic msg m =
-  let c = m.config in
-  { m
-  | config = { c | trace = msg :: c.trace }
-  , going = False
-  }
-
 step : Bool -> Model -> Model
 step updateHistory m =
   let
-    go ({ config, history } as model) =
+    go ({ config, trace, history } as model) =
       case parse config.program of
         Ok { command, unconsumed } ->
           case evalCommand command { config | program = unconsumed } of
-            Ok nextConfig ->
+            Ok ( nextConfig, mmsg ) ->
               { model
               | config = nextConfig
+              , trace =
+                  case mmsg of
+                    Just msg -> msg :: trace
+                    _ -> trace
               , history =
                 if updateHistory
-                then config :: history
+                then nextConfig :: history
                 else history
               }
-            Err e -> panic (errMsg e) model
-        Err _ -> panic (mkErrMsg "Parse error") model
+            Err e -> { m | trace = errMsg e :: trace }
+        Err _ -> { m | trace = (mkErrMsg "Parse error") :: trace }
   in
   if done m.config
   then { m | going = False }
-  else go m
+  else
+    let
+      next =
+        case m.history of
+          [] -> m
+          last :: _ ->
+            if m.config.program /= last.program
+            then { m | history = m.config :: m.history }
+            else m
+    in go next
 
 eval : Model -> Model
 eval model =
@@ -81,18 +87,12 @@ eval model =
       else m
   in
   let out = go { model | going = True } in
-  { out | history = model.config :: model.history }
+  { out | history = out.config :: model.history }
 
 reset : Model -> Model
 reset m =
-  let c = m.config in
   { m
-  | config =
-    { c
-    | stack = []
-    , program = m.savedProgram
-    , env = emptyEnv
-    }
+  | config = initConfig m.savedProgram
   , going = False
   }
 
@@ -100,30 +100,25 @@ undo : Model -> Model
 undo m =
   let c = m.config in
   case m.history of
-    [] -> m
-    old :: rest ->
+    curr :: last :: rest ->
       { m
-      | config =
-        { c
-        | stack = old.stack
-        , env = old.env
-        , program = old.program
-        }
-      , history = rest
+      | config = last
+      , history = last :: rest
       }
+    _ -> reset m
 
 initConfig prog =
-  { stack = emptyStack
+  { stack = []
   , program = prog
   , env = emptyEnv
-  , trace = []
   }
 
 initModel prog =
   { config = initConfig prog
   , going = False
   , savedProgram = prog
-  , history = []
+  , trace = []
+  , history = [initConfig prog]
   , dragState = Static 0.5
   , dragStateY = Static 0.7
   }
@@ -212,14 +207,14 @@ update msg m =
     Save -> mk { m | savedProgram = m.config.program }
     Change p ->
       let c = m.config in
-      mk { m | config = { c | program = p }, history = [] }
+      mk { m | config = { c | program = p } }
     Tick _ -> if m.going then mk (step False m) else mk m
     ClearConsole ->
-      let c = m.config in
-      mk { m | config = { c | trace = [] } }
+      mk { m | trace = [] }
     ClearData ->
       let c = m.config in
-      mk { m | config = { c | stack = [], env = emptyEnv }, history = [] }
+      let newC = { c | stack = [], env = emptyEnv } in
+      mk { m | config = newC, history = newC :: m.history }
     DragStart ->
       mk { m | dragState = Moving (toFraction m.dragState) }
     DragMove isDown frac ->
@@ -288,7 +283,7 @@ buttonBar m =
         [ text "step" ]
       , button
         [ onClick Undo
-        , disabled (List.isEmpty m.history)
+        , disabled (List.length m.history <= 1)
         ]
         [ text "undo" ]
       , button
@@ -314,11 +309,11 @@ console m =
     ]
     [ div [ id "console-window" ]
       [ div [ id "console" ]
-        (List.map line (List.reverse m.config.trace))
+        (List.map line (List.reverse m.trace))
       ]
     ,  button
       [ id "clear-console"
-      , disabled (List.isEmpty m.config.trace)
+      , disabled (List.isEmpty m.trace)
       , onClick ClearConsole
       ]
       [ text "clear" ]
