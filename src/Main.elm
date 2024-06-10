@@ -265,7 +265,7 @@ window m =
       [ id "editor"
       , placeholder "Write your program here..."
       , value m.config.program
-      , disabled (m.going) -- || isMoving m)
+      , disabled (m.going)
       , onInput Change
       ]
       []
