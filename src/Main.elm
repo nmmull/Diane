@@ -4,18 +4,43 @@ import MyParser exposing (parse)
 import Diane exposing (..)
 import Dict exposing (Dict)
 import Browser
+import Browser.Events as E
 import Time
 import Json.Decode as Decode
 import Html exposing (Html, div, text, textarea, button)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput, keyCode, preventDefaultOn)
+import Html.Events exposing (onClick, onInput, keyCode, preventDefaultOn, onMouseDown)
 
 type alias Model =
   { config : Config
   , going : Bool
   , savedProgram : Prog
   , history : List Config
+  , dragState : DragState
+  , dragStateY : DragState
   }
+
+type DragState
+  = Static Float
+  | Moving Float
+
+toFraction : DragState -> Float
+toFraction s =
+  case s of
+    Static f -> f
+    Moving f -> f
+
+toPointerEvents : DragState -> String
+toPointerEvents s =
+  case s of
+    Static _ -> "auto"
+    Moving _ -> "none"
+
+isMoving : Model -> Bool
+isMoving m =
+  case m.dragState of
+    Moving _ -> True
+    _ -> False
 
 panic : String -> Model -> Model
 panic msg m =
@@ -54,13 +79,20 @@ eval model =
       if m.going
       then go (step False m)
       else m
-  in go { model | going = True, history = model.config :: model.history }
+  in
+  let out = go { model | going = True } in
+  { out | history = model.config :: model.history }
 
 reset : Model -> Model
 reset m =
   let c = m.config in
   { m
-  | config = { c | stack = [], program = m.savedProgram, env = emptyEnv }
+  | config =
+    { c
+    | stack = []
+    , program = m.savedProgram
+    , env = emptyEnv
+    }
   , going = False
   }
 
@@ -71,11 +103,17 @@ undo m =
     [] -> m
     old :: rest ->
       { m
-      | config = { c | stack = old.stack, env = old.env, program = old.program }
-      , history = rest }
+      | config =
+        { c
+        | stack = old.stack
+        , env = old.env
+        , program = old.program
+        }
+      , history = rest
+      }
 
 initConfig prog =
-  { stack = []
+  { stack = emptyStack
   , program = prog
   , env = emptyEnv
   , trace = []
@@ -86,6 +124,8 @@ initModel prog =
   , going = False
   , savedProgram = prog
   , history = []
+  , dragState = Static 0.5
+  , dragStateY = Static 0.7
   }
 
 init : String -> ( Model , Cmd Msg )
@@ -104,15 +144,59 @@ type Msg
   | ClearData
   | Change String
   | Tick Time.Posix
+  | DragStart
+  | DragMove Bool Float
+  | DragStop Float
+  | DragStartY
+  | DragMoveY Bool Float
+  | DragStopY Float
 
 port messageReceiver : (String -> msg) -> Sub msg
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions m =
+  let
+    dragSubs =
+      case m.dragState of
+        Static _ -> Sub.none
+        Moving _ ->
+          Sub.batch
+            [ E.onMouseMove (Decode.map2 DragMove decodeButtons decodeFraction)
+            , E.onMouseUp (Decode.map DragStop decodeFraction)
+            ]
+  in
+  let
+    dragSubsY =
+      case m.dragStateY of
+        Static _ -> Sub.none
+        Moving _ ->
+          Sub.batch
+            [ E.onMouseMove (Decode.map2 DragMoveY decodeButtons decodeFractionY)
+            , E.onMouseUp (Decode.map DragStopY decodeFractionY)
+            ]
+  in
   Sub.batch
     [ Time.every 100 Tick
     , messageReceiver Change
+    , dragSubs
+    , dragSubsY
     ]
+
+decodeFraction : Decode.Decoder Float
+decodeFraction =
+  Decode.map2 (/)
+    (Decode.field "pageX" Decode.float)
+    (Decode.at ["currentTarget","defaultView","innerWidth"] Decode.float)
+
+decodeFractionY : Decode.Decoder Float
+decodeFractionY =
+  Decode.map2 (/)
+    (Decode.field "pageY" Decode.float)
+    (Decode.at ["currentTarget","defaultView","innerHeight"] Decode.float)
+
+decodeButtons : Decode.Decoder Bool
+decodeButtons =
+  Decode.field "buttons" (Decode.map (\buttons -> buttons == 1) Decode.int)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg m =
@@ -136,47 +220,43 @@ update msg m =
     ClearData ->
       let c = m.config in
       mk { m | config = { c | stack = [], env = emptyEnv }, history = [] }
+    DragStart ->
+      mk { m | dragState = Moving (toFraction m.dragState) }
+    DragMove isDown frac ->
+      mk { m | dragState = if isDown then Moving frac else Static (toFraction m.dragState) }
+    DragStop frac ->
+      mk { m | dragState = Static frac }
+    DragStartY ->
+      mk { m | dragStateY = Moving (toFraction m.dragStateY) }
+    DragMoveY isDown frac ->
+      mk { m | dragStateY = if isDown then Moving frac else Static (toFraction m.dragStateY) }
+    DragStopY frac ->
+      mk { m | dragStateY = Static frac }
 
-succeededIfKey : Int -> Int -> Decode.Decoder Int
-succeededIfKey n key =
-  if key == n
-  then Decode.succeed key
-  else Decode.fail "non-key"
+type Shortkey
+  = Backslash
+  | Option
+  | Backtick
 
-succeededIfTabKey : Int -> Decode.Decoder Int
-succeededIfTabKey = succeededIfKey 9
-
-shortcut : Int -> Msg -> Decode.Decoder ( Msg, Bool )
-shortcut n msg =
-  Decode.andThen (succeededIfKey n) keyCode
-      |> Decode.map (always msg)
-      |> Decode.map (\m -> ( m, True ))
-
-tabPressed : Decode.Decoder ( Msg, Bool )
-tabPressed = shortcut 9 Step
+keycodes : Dict Int Shortkey
+keycodes =
+  Dict.fromList
+    [ ( 220, Backslash )
+    , ( 18, Option )
+    , ( 192, Backtick )
+    ]
 
 shortcuts : Decode.Decoder ( Msg, Bool )
 shortcuts =
+  let mk m = Decode.succeed ( m, True ) in
   let
-    succeeded key =
-      if key == 220 || key == 192 || key == 18
-      then Decode.succeed key
-      else Decode.fail "non-key"
-  in
-  let
-    choose key =
-      if key == 220 -- BACKSLASH
-      then Step
-      else if key == 18 -- OPTION
-      then Eval
-      else if key == 192 -- BACKTICK
-      then Undo
-      else Reset
-  in
-  Decode.andThen succeeded keyCode
-    |> Decode.map choose
-    |> Decode.map (\m -> ( m, True ))
-
+    go key =
+      case Dict.get key keycodes of
+        Just Backslash -> mk Step
+        Just Option -> mk Eval
+        Just Backtick -> mk Undo
+        _ -> Decode.fail "unknown-shortcut"
+  in Decode.andThen go keyCode
 
 window : Model -> Html Msg
 window m =
@@ -185,7 +265,7 @@ window m =
       [ id "editor"
       , placeholder "Write your program here..."
       , value m.config.program
-      , disabled m.going
+      , disabled (m.going) -- || isMoving m)
       , onInput Change
       ]
       []
@@ -226,16 +306,22 @@ buttonBar m =
 console : Model -> Html Msg
 console m =
   let line s = div [] [ text s ] in
-  div [ id "console-window" ]
-    [ div [ id "console" ]
-      (List.map line (List.reverse m.config.trace))
-    , button
+  div
+    [ id "console-pane"
+    , style "pointer-events" (toPointerEvents m.dragStateY)
+    , style "user-select" (toPointerEvents m.dragStateY)
+    , style "height" (String.fromFloat (100 * (1 - toFraction m.dragStateY)) ++ "%")
+    ]
+    [ div [ id "console-window" ]
+      [ div [ id "console" ]
+        (List.map line (List.reverse m.config.trace))
+      ]
+    ,  button
       [ id "clear-console"
       , disabled (List.isEmpty m.config.trace)
       , onClick ClearConsole
       ]
-      [ text "clear"
-      ]
+      [ text "clear" ]
     ]
 
 envHtmls : Env -> List (Html Msg)
@@ -248,7 +334,12 @@ envHtmls e =
 
 viz : Model -> Html Msg
 viz m =
-  div [ id "viz-window" ]
+  div
+    [ id "viz-window"
+    , style "pointer-events" (toPointerEvents m.dragStateY)
+    , style "user-select" (toPointerEvents m.dragStateY)
+    , style "height" (String.fromFloat (100 * toFraction m.dragStateY) ++ "%")
+    ]
     [ div [ id "viz" ]
       [ Html.h3 [] [ text "Stack" ]
       , div [] [ text (stackStr m.config.stack) ]
@@ -262,8 +353,40 @@ viz m =
       , disabled (List.isEmpty m.config.stack && Dict.isEmpty m.config.env)
       , onClick ClearData
       ]
-      [ text "clear"
+      [ text "clear" ]
+    ]
+
+vsplit : Model -> Html Msg
+vsplit m =
+  div
+    [ id "vsplit"
+    , style "left" (String.fromFloat (100 * toFraction m.dragState) ++ "%")
+    , onMouseDown DragStart
+    ]
+    [ div
+      [ style "margin" "auto"
+      , style "width" "1px"
+      , style "height" "100%"
+      , style "background-color" "black"
       ]
+      []
+    ]
+
+hsplit : Model -> Html Msg
+hsplit m =
+  div
+    [ id "right-split"
+    , style "top" (String.fromFloat (100 * toFraction m.dragStateY) ++ "%")
+    , onMouseDown DragStartY
+    ]
+    [ div
+      [ style "margin-top" "5px"
+      , style "margin-left" "-5px"
+      , style "width" "calc(100% + 5px)"
+      , style "height" "1px"
+      , style "background-color" "black"
+      ]
+      []
     ]
 
 view : Model -> Html Msg
@@ -272,11 +395,28 @@ view m =
     [ id "view"
     , preventDefaultOn "keydown" shortcuts
     ]
-    [ window m
-    , buttonBar m
-    , console m
-    , viz m
-  ]
+    [ div
+      [ id "left-pane"
+      , style "pointer-events" (toPointerEvents m.dragState)
+      , style "user-select" (toPointerEvents m.dragState)
+      , style "width" (String.fromFloat (100 * toFraction m.dragState) ++ "%")
+      ]
+      [ window m
+      , div [ id "left-split" ] []
+      , buttonBar m
+      ]
+    , vsplit m
+    , div
+      [ id "right-pane"
+      , style "pointer-events" (toPointerEvents m.dragState)
+      , style "user-select" (toPointerEvents m.dragState)
+      , style "width" (String.fromFloat (100 * (1.0 - toFraction m.dragState)) ++ "%")
+      ]
+      [ viz m
+      , hsplit m
+      , console m
+      ]
+    ]
 
 main =
   Browser.element
