@@ -4373,52 +4373,6 @@ function _Browser_load(url)
 
 
 
-function _Time_now(millisToPosix)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		callback(_Scheduler_succeed(millisToPosix(Date.now())));
-	});
-}
-
-var _Time_setInterval = F2(function(interval, task)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
-		return function() { clearInterval(id); };
-	});
-});
-
-function _Time_here()
-{
-	return _Scheduler_binding(function(callback)
-	{
-		callback(_Scheduler_succeed(
-			A2($elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
-		));
-	});
-}
-
-
-function _Time_getZoneName()
-{
-	return _Scheduler_binding(function(callback)
-	{
-		try
-		{
-			var name = $elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
-		}
-		catch (e)
-		{
-			var name = $elm$time$Time$Offset(new Date().getTimezoneOffset());
-		}
-		callback(_Scheduler_succeed(name));
-	});
-}
-
-
-
 
 // STRINGS
 
@@ -4546,6 +4500,11 @@ var _Parser_findSubString = F5(function(smallString, offset, row, col, bigString
 
 	return _Utils_Tuple3(newOffset, row, col);
 });
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -5335,20 +5294,20 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Main$Static = function (a) {
+var $author$project$Model$Static = function (a) {
 	return {$: 'Static', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Diane$emptyEnv = $elm$core$Dict$empty;
-var $author$project$Main$initConfig = function (prog) {
+var $author$project$Model$initConfig = function (prog) {
 	return {env: $author$project$Diane$emptyEnv, program: prog, stack: _List_Nil};
 };
-var $author$project$Main$initModel = function (prog) {
+var $author$project$Model$initModel = function (prog) {
 	return {
-		config: $author$project$Main$initConfig(prog),
-		dragState: $author$project$Main$Static(0.5),
-		dragStateY: $author$project$Main$Static(0.7),
+		config: $author$project$Model$initConfig(prog),
+		dragX: $author$project$Model$Static(0.5),
+		dragY: $author$project$Model$Static(0.7),
 		going: false,
 		history: _List_Nil,
 		programCopy: prog,
@@ -5358,36 +5317,31 @@ var $author$project$Main$initModel = function (prog) {
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Main$init = function (prog) {
-	return _Utils_Tuple2(
-		$author$project$Main$initModel(prog),
-		$elm$core$Platform$Cmd$none);
+var $author$project$Update$noCmd = function (x) {
+	return _Utils_Tuple2(x, $elm$core$Platform$Cmd$none);
 };
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$Change = function (a) {
+var $author$project$Update$Change = function (a) {
 	return {$: 'Change', a: a};
 };
-var $author$project$Main$DragMove = F2(
+var $author$project$Update$DragMoveX = F2(
 	function (a, b) {
-		return {$: 'DragMove', a: a, b: b};
+		return {$: 'DragMoveX', a: a, b: b};
 	});
-var $author$project$Main$DragMoveY = F2(
+var $author$project$Update$DragMoveY = F2(
 	function (a, b) {
 		return {$: 'DragMoveY', a: a, b: b};
 	});
-var $author$project$Main$DragStop = function (a) {
-	return {$: 'DragStop', a: a};
+var $author$project$Update$DragStopX = function (a) {
+	return {$: 'DragStopX', a: a};
 };
-var $author$project$Main$DragStopY = function (a) {
+var $author$project$Update$DragStopY = function (a) {
 	return {$: 'DragStopY', a: a};
-};
-var $author$project$Main$Tick = function (a) {
-	return {$: 'Tick', a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$Main$decodeButtons = A2(
+var $author$project$Update$decodeButtons = A2(
 	$elm$json$Json$Decode$field,
 	'buttons',
 	A2(
@@ -5401,7 +5355,7 @@ var $elm$json$Json$Decode$at = F2(
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $author$project$Main$decodeFraction = A3(
+var $author$project$Update$decodeFracX = A3(
 	$elm$json$Json$Decode$map2,
 	$elm$core$Basics$fdiv,
 	A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float),
@@ -5410,7 +5364,7 @@ var $author$project$Main$decodeFraction = A3(
 		_List_fromArray(
 			['currentTarget', 'defaultView', 'innerWidth']),
 		$elm$json$Json$Decode$float));
-var $author$project$Main$decodeFractionY = A3(
+var $author$project$Update$decodeFracY = A3(
 	$elm$json$Json$Decode$map2,
 	$elm$core$Basics$fdiv,
 	A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float),
@@ -5419,48 +5373,34 @@ var $author$project$Main$decodeFractionY = A3(
 		_List_fromArray(
 			['currentTarget', 'defaultView', 'innerHeight']),
 		$elm$json$Json$Decode$float));
-var $elm$time$Time$Every = F2(
-	function (a, b) {
-		return {$: 'Every', a: a, b: b};
+var $author$project$Update$messageReceiver = _Platform_incomingPort('messageReceiver', $elm$json$Json$Decode$string);
+var $elm$browser$Browser$Events$Document = {$: 'Document'};
+var $elm$browser$Browser$Events$MySub = F3(
+	function (a, b, c) {
+		return {$: 'MySub', a: a, b: b, c: c};
 	});
-var $elm$time$Time$State = F2(
-	function (taggers, processes) {
-		return {processes: processes, taggers: taggers};
+var $elm$browser$Browser$Events$State = F2(
+	function (subs, pids) {
+		return {pids: pids, subs: subs};
 	});
-var $elm$time$Time$init = $elm$core$Task$succeed(
-	A2($elm$time$Time$State, $elm$core$Dict$empty, $elm$core$Dict$empty));
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
+var $elm$browser$Browser$Events$init = $elm$core$Task$succeed(
+	A2($elm$browser$Browser$Events$State, _List_Nil, $elm$core$Dict$empty));
+var $elm$browser$Browser$Events$nodeToKey = function (node) {
+	if (node.$ === 'Document') {
+		return 'd_';
+	} else {
+		return 'w_';
+	}
+};
+var $elm$browser$Browser$Events$addKey = function (sub) {
+	var node = sub.a;
+	var name = sub.b;
+	return _Utils_Tuple2(
+		_Utils_ap(
+			$elm$browser$Browser$Events$nodeToKey(node),
+			name),
+		sub);
+};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5521,6 +5461,7 @@ var $elm$core$Dict$balance = F5(
 			}
 		}
 	});
+var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -5569,27 +5510,18 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $elm$time$Time$addMySub = F2(
-	function (_v0, state) {
-		var interval = _v0.a;
-		var tagger = _v0.b;
-		var _v1 = A2($elm$core$Dict$get, interval, state);
-		if (_v1.$ === 'Nothing') {
-			return A3(
-				$elm$core$Dict$insert,
-				interval,
-				_List_fromArray(
-					[tagger]),
-				state);
-		} else {
-			var taggers = _v1.a;
-			return A3(
-				$elm$core$Dict$insert,
-				interval,
-				A2($elm$core$List$cons, tagger, taggers),
-				state);
-		}
-	});
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
+};
 var $elm$core$Process$kill = _Scheduler_kill;
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
@@ -5677,206 +5609,11 @@ var $elm$core$Dict$merge = F6(
 			intermediateResult,
 			leftovers);
 	});
-var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
-var $elm$time$Time$Name = function (a) {
-	return {$: 'Name', a: a};
-};
-var $elm$time$Time$Offset = function (a) {
-	return {$: 'Offset', a: a};
-};
-var $elm$time$Time$Zone = F2(
-	function (a, b) {
-		return {$: 'Zone', a: a, b: b};
-	});
-var $elm$time$Time$customZone = $elm$time$Time$Zone;
-var $elm$time$Time$setInterval = _Time_setInterval;
-var $elm$core$Process$spawn = _Scheduler_spawn;
-var $elm$time$Time$spawnHelp = F3(
-	function (router, intervals, processes) {
-		if (!intervals.b) {
-			return $elm$core$Task$succeed(processes);
-		} else {
-			var interval = intervals.a;
-			var rest = intervals.b;
-			var spawnTimer = $elm$core$Process$spawn(
-				A2(
-					$elm$time$Time$setInterval,
-					interval,
-					A2($elm$core$Platform$sendToSelf, router, interval)));
-			var spawnRest = function (id) {
-				return A3(
-					$elm$time$Time$spawnHelp,
-					router,
-					rest,
-					A3($elm$core$Dict$insert, interval, id, processes));
-			};
-			return A2($elm$core$Task$andThen, spawnRest, spawnTimer);
-		}
-	});
-var $elm$time$Time$onEffects = F3(
-	function (router, subs, _v0) {
-		var processes = _v0.processes;
-		var rightStep = F3(
-			function (_v6, id, _v7) {
-				var spawns = _v7.a;
-				var existing = _v7.b;
-				var kills = _v7.c;
-				return _Utils_Tuple3(
-					spawns,
-					existing,
-					A2(
-						$elm$core$Task$andThen,
-						function (_v5) {
-							return kills;
-						},
-						$elm$core$Process$kill(id)));
-			});
-		var newTaggers = A3($elm$core$List$foldl, $elm$time$Time$addMySub, $elm$core$Dict$empty, subs);
-		var leftStep = F3(
-			function (interval, taggers, _v4) {
-				var spawns = _v4.a;
-				var existing = _v4.b;
-				var kills = _v4.c;
-				return _Utils_Tuple3(
-					A2($elm$core$List$cons, interval, spawns),
-					existing,
-					kills);
-			});
-		var bothStep = F4(
-			function (interval, taggers, id, _v3) {
-				var spawns = _v3.a;
-				var existing = _v3.b;
-				var kills = _v3.c;
-				return _Utils_Tuple3(
-					spawns,
-					A3($elm$core$Dict$insert, interval, id, existing),
-					kills);
-			});
-		var _v1 = A6(
-			$elm$core$Dict$merge,
-			leftStep,
-			bothStep,
-			rightStep,
-			newTaggers,
-			processes,
-			_Utils_Tuple3(
-				_List_Nil,
-				$elm$core$Dict$empty,
-				$elm$core$Task$succeed(_Utils_Tuple0)));
-		var spawnList = _v1.a;
-		var existingDict = _v1.b;
-		var killTask = _v1.c;
-		return A2(
-			$elm$core$Task$andThen,
-			function (newProcesses) {
-				return $elm$core$Task$succeed(
-					A2($elm$time$Time$State, newTaggers, newProcesses));
-			},
-			A2(
-				$elm$core$Task$andThen,
-				function (_v2) {
-					return A3($elm$time$Time$spawnHelp, router, spawnList, existingDict);
-				},
-				killTask));
-	});
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
-var $elm$time$Time$onSelfMsg = F3(
-	function (router, interval, state) {
-		var _v0 = A2($elm$core$Dict$get, interval, state.taggers);
-		if (_v0.$ === 'Nothing') {
-			return $elm$core$Task$succeed(state);
-		} else {
-			var taggers = _v0.a;
-			var tellTaggers = function (time) {
-				return $elm$core$Task$sequence(
-					A2(
-						$elm$core$List$map,
-						function (tagger) {
-							return A2(
-								$elm$core$Platform$sendToApp,
-								router,
-								tagger(time));
-						},
-						taggers));
-			};
-			return A2(
-				$elm$core$Task$andThen,
-				function (_v1) {
-					return $elm$core$Task$succeed(state);
-				},
-				A2($elm$core$Task$andThen, tellTaggers, $elm$time$Time$now));
-		}
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$time$Time$subMap = F2(
-	function (f, _v0) {
-		var interval = _v0.a;
-		var tagger = _v0.b;
-		return A2(
-			$elm$time$Time$Every,
-			interval,
-			A2($elm$core$Basics$composeL, f, tagger));
-	});
-_Platform_effectManagers['Time'] = _Platform_createManager($elm$time$Time$init, $elm$time$Time$onEffects, $elm$time$Time$onSelfMsg, 0, $elm$time$Time$subMap);
-var $elm$time$Time$subscription = _Platform_leaf('Time');
-var $elm$time$Time$every = F2(
-	function (interval, tagger) {
-		return $elm$time$Time$subscription(
-			A2($elm$time$Time$Every, interval, tagger));
-	});
-var $author$project$Main$messageReceiver = _Platform_incomingPort('messageReceiver', $elm$json$Json$Decode$string);
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$browser$Browser$Events$Document = {$: 'Document'};
-var $elm$browser$Browser$Events$MySub = F3(
-	function (a, b, c) {
-		return {$: 'MySub', a: a, b: b, c: c};
-	});
-var $elm$browser$Browser$Events$State = F2(
-	function (subs, pids) {
-		return {pids: pids, subs: subs};
-	});
-var $elm$browser$Browser$Events$init = $elm$core$Task$succeed(
-	A2($elm$browser$Browser$Events$State, _List_Nil, $elm$core$Dict$empty));
-var $elm$browser$Browser$Events$nodeToKey = function (node) {
-	if (node.$ === 'Document') {
-		return 'd_';
-	} else {
-		return 'w_';
-	}
-};
-var $elm$browser$Browser$Events$addKey = function (sub) {
-	var node = sub.a;
-	var name = sub.b;
-	return _Utils_Tuple2(
-		_Utils_ap(
-			$elm$browser$Browser$Events$nodeToKey(node),
-			name),
-		sub);
-};
-var $elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, dict) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($elm$core$Dict$insert, key, value, dict);
-			}),
-		$elm$core$Dict$empty,
-		assocs);
-};
 var $elm$browser$Browser$Events$Event = F2(
 	function (key, event) {
 		return {event: event, key: key};
 	});
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var $elm$browser$Browser$Events$spawn = F3(
 	function (router, key, _v0) {
 		var node = _v0.a;
@@ -6037,48 +5774,84 @@ var $elm$browser$Browser$Events$on = F3(
 	});
 var $elm$browser$Browser$Events$onMouseMove = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'mousemove');
 var $elm$browser$Browser$Events$onMouseUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'mouseup');
-var $author$project$Main$subscriptions = function (m) {
-	var dragSubs = function () {
-		var _v1 = m.dragState;
+var $author$project$Update$subscriptions = function (m) {
+	var draggedX = function () {
+		var _v1 = m.dragX;
 		if (_v1.$ === 'Static') {
-			return $elm$core$Platform$Sub$none;
+			return _List_Nil;
 		} else {
-			return $elm$core$Platform$Sub$batch(
-				_List_fromArray(
-					[
-						$elm$browser$Browser$Events$onMouseMove(
-						A3($elm$json$Json$Decode$map2, $author$project$Main$DragMove, $author$project$Main$decodeButtons, $author$project$Main$decodeFraction)),
-						$elm$browser$Browser$Events$onMouseUp(
-						A2($elm$json$Json$Decode$map, $author$project$Main$DragStop, $author$project$Main$decodeFraction))
-					]));
+			return _List_fromArray(
+				[
+					$elm$browser$Browser$Events$onMouseMove(
+					A3($elm$json$Json$Decode$map2, $author$project$Update$DragMoveX, $author$project$Update$decodeButtons, $author$project$Update$decodeFracX)),
+					$elm$browser$Browser$Events$onMouseUp(
+					A2($elm$json$Json$Decode$map, $author$project$Update$DragStopX, $author$project$Update$decodeFracX))
+				]);
 		}
 	}();
-	var dragSubsY = function () {
-		var _v0 = m.dragStateY;
+	var draggedY = function () {
+		var _v0 = m.dragY;
 		if (_v0.$ === 'Static') {
-			return $elm$core$Platform$Sub$none;
+			return _List_Nil;
 		} else {
-			return $elm$core$Platform$Sub$batch(
-				_List_fromArray(
-					[
-						$elm$browser$Browser$Events$onMouseMove(
-						A3($elm$json$Json$Decode$map2, $author$project$Main$DragMoveY, $author$project$Main$decodeButtons, $author$project$Main$decodeFractionY)),
-						$elm$browser$Browser$Events$onMouseUp(
-						A2($elm$json$Json$Decode$map, $author$project$Main$DragStopY, $author$project$Main$decodeFractionY))
-					]));
+			return _List_fromArray(
+				[
+					$elm$browser$Browser$Events$onMouseMove(
+					A3($elm$json$Json$Decode$map2, $author$project$Update$DragMoveY, $author$project$Update$decodeButtons, $author$project$Update$decodeFracY)),
+					$elm$browser$Browser$Events$onMouseUp(
+					A2($elm$json$Json$Decode$map, $author$project$Update$DragStopY, $author$project$Update$decodeFracY))
+				]);
 		}
 	}();
 	return $elm$core$Platform$Sub$batch(
-		_List_fromArray(
-			[
-				A2($elm$time$Time$every, 100, $author$project$Main$Tick),
-				$author$project$Main$messageReceiver($author$project$Main$Change),
-				dragSubs,
-				dragSubsY
-			]));
+		A2(
+			$elm$core$List$cons,
+			$author$project$Update$messageReceiver($author$project$Update$Change),
+			_Utils_ap(draggedX, draggedY)));
 };
-var $author$project$Main$Moving = function (a) {
+var $author$project$Model$Moving = function (a) {
 	return {$: 'Moving', a: a};
+};
+var $author$project$Model$changeProgram = F2(
+	function (newProgram, m) {
+		var c = m.config;
+		return _Utils_update(
+			m,
+			{
+				config: _Utils_update(
+					c,
+					{program: newProgram})
+			});
+	});
+var $author$project$Model$clearEnv = function (m) {
+	var c = m.config;
+	return _Utils_update(
+		m,
+		{
+			config: _Utils_update(
+				c,
+				{env: $author$project$Diane$emptyEnv})
+		});
+};
+var $author$project$Model$clearHistory = function (m) {
+	return _Utils_update(
+		m,
+		{history: _List_Nil});
+};
+var $author$project$Model$clearStack = function (m) {
+	var c = m.config;
+	return _Utils_update(
+		m,
+		{
+			config: _Utils_update(
+				c,
+				{stack: _List_Nil})
+		});
+};
+var $author$project$Model$clearTrace = function (m) {
+	return _Utils_update(
+		m,
+		{trace: _List_Nil});
 };
 var $author$project$Diane$done = function (c) {
 	return $elm$core$String$isEmpty(c.program);
@@ -6113,6 +5886,37 @@ var $author$project$Diane$Subroutine = function (a) {
 var $author$project$Diane$UnknownVariable = {$: 'UnknownVariable'};
 var $author$project$Diane$assign = $elm$core$Dict$insert;
 var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
 var $author$project$Diane$lookup = $elm$core$Dict$get;
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Dict$getMin = function (dict) {
@@ -6932,14 +6736,59 @@ var $author$project$Diane$evalCommand = F2(
 		}
 		return $elm$core$Result$Err($author$project$Diane$StackUnderflow);
 	});
-var $author$project$Main$panic = F2(
-	function (m, msg) {
+var $author$project$Model$trace = F2(
+	function (msg, m) {
 		return _Utils_update(
 			m,
 			{
-				going: false,
 				trace: A2($elm$core$List$cons, msg, m.trace)
 			});
+	});
+var $author$project$Model$maybeTrace = function (maybeMsg) {
+	if (maybeMsg.$ === 'Just') {
+		var msg = maybeMsg.a;
+		return $author$project$Model$trace(msg);
+	} else {
+		return $elm$core$Basics$identity;
+	}
+};
+var $author$project$Model$stop = function (m) {
+	return _Utils_update(
+		m,
+		{going: false});
+};
+var $author$project$Model$panic = function (msg) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Model$maybeTrace(
+			$elm$core$Maybe$Just(msg)),
+		$author$project$Model$stop);
+};
+var $author$project$Model$evalAndThen = F3(
+	function (go, _v0, model) {
+		var command = _v0.command;
+		var unconsumed = _v0.unconsumed;
+		var config = model.config;
+		var _v1 = A2(
+			$author$project$Diane$evalCommand,
+			command,
+			_Utils_update(
+				config,
+				{program: unconsumed}));
+		if (_v1.$ === 'Ok') {
+			var out = _v1.a;
+			return A2(go, out, model);
+		} else {
+			var e = _v1.a;
+			return A2(
+				$author$project$Model$panic,
+				$author$project$Diane$errMsg(e),
+				model);
+		}
+	});
+var $author$project$Model$ifThenElse = F4(
+	function (f, yes, no, m) {
+		return f(m) ? yes(m) : no(m);
 	});
 var $author$project$MyParser$Output = F2(
 	function (command, unconsumed) {
@@ -7372,6 +7221,11 @@ var $elm$core$List$any = F2(
 				}
 			}
 		}
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
 	});
 var $elm$core$List$all = F2(
 	function (isOkay, list) {
@@ -8127,73 +7981,76 @@ var $author$project$MyParser$parse = function () {
 		$author$project$MyParser$unconsumed);
 	return $elm$parser$Parser$run(go);
 }();
-var $author$project$Main$step = F2(
-	function (updateHistory, m) {
-		var go = function (model) {
-			var config = model.config;
-			var trace = model.trace;
-			var history = model.history;
-			var _v0 = $author$project$MyParser$parse(config.program);
-			if (_v0.$ === 'Ok') {
-				var command = _v0.a.command;
-				var unconsumed = _v0.a.unconsumed;
-				var _v1 = A2(
-					$author$project$Diane$evalCommand,
-					command,
-					_Utils_update(
-						config,
-						{program: unconsumed}));
-				if (_v1.$ === 'Ok') {
-					var _v2 = _v1.a;
-					var nextConfig = _v2.a;
-					var mmsg = _v2.b;
-					return _Utils_update(
-						model,
-						{
-							config: nextConfig,
-							history: updateHistory ? (_Utils_eq(config.program, model.programCopy) ? A2($elm$core$List$cons, config, history) : A2(
-								$elm$core$List$cons,
-								config,
-								A2(
-									$elm$core$List$cons,
-									_Utils_update(
-										config,
-										{program: model.programCopy}),
-									history))) : history,
-							programCopy: nextConfig.program,
-							trace: function () {
-								if (mmsg.$ === 'Just') {
-									var msg = mmsg.a;
-									return A2($elm$core$List$cons, msg, trace);
-								} else {
-									return trace;
-								}
-							}()
-						});
-				} else {
-					var e = _v1.a;
-					return A2(
-						$author$project$Main$panic,
-						m,
-						$author$project$Diane$errMsg(e));
-				}
-			} else {
-				return A2(
-					$author$project$Main$panic,
-					m,
-					$author$project$Diane$mkErrMsg('Parse error'));
-			}
-		};
-		return $author$project$Diane$done(m.config) ? _Utils_update(
-			m,
-			{going: false}) : go(m);
+var $author$project$Model$parseAndThen = F2(
+	function (go, model) {
+		var _v0 = $author$project$MyParser$parse(model.config.program);
+		if (_v0.$ === 'Ok') {
+			var out = _v0.a;
+			return A2(go, out, model);
+		} else {
+			return A2(
+				$author$project$Model$panic,
+				$author$project$Diane$mkErrMsg('Parse Error'),
+				model);
+		}
 	});
-var $author$project$Main$eval = function (model) {
+var $author$project$Model$updateConfig = F3(
+	function (withHistory, config, model) {
+		var c = model.config;
+		var go = function (m) {
+			var newHistory = _Utils_eq(c.program, m.programCopy) ? A2($elm$core$List$cons, c, m.history) : A2(
+				$elm$core$List$cons,
+				c,
+				A2(
+					$elm$core$List$cons,
+					_Utils_update(
+						c,
+						{program: m.programCopy}),
+					m.history));
+			return _Utils_update(
+				m,
+				{history: newHistory});
+		};
+		var m = withHistory ? go(model) : model;
+		return _Utils_update(
+			m,
+			{config: config, programCopy: config.program});
+	});
+var $author$project$Model$evalStep = function (withHistory) {
+	var go = function (_v0) {
+		var nextConfig = _v0.a;
+		var maybeMsg = _v0.b;
+		return A2(
+			$elm$core$Basics$composeR,
+			A2($author$project$Model$updateConfig, withHistory, nextConfig),
+			$author$project$Model$maybeTrace(maybeMsg));
+	};
+	return A3(
+		$author$project$Model$ifThenElse,
+		A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.config;
+			},
+			$author$project$Diane$done),
+		$author$project$Model$stop,
+		$author$project$Model$parseAndThen(
+			$author$project$Model$evalAndThen(go)));
+};
+var $author$project$Model$start = function (m) {
+	return _Utils_update(
+		m,
+		{going: true});
+};
+var $author$project$Model$updateHistory = function (m) {
+	return A3($author$project$Model$updateConfig, true, m.config, m);
+};
+var $author$project$Model$eval = function () {
 	var go = function (m) {
 		go:
 		while (true) {
 			if (m.going) {
-				var $temp$m = A2($author$project$Main$step, false, m);
+				var $temp$m = A2($author$project$Model$evalStep, false, m);
 				m = $temp$m;
 				continue go;
 			} else {
@@ -8201,179 +8058,171 @@ var $author$project$Main$eval = function (model) {
 			}
 		}
 	};
-	var c = model.config;
-	var h = _Utils_eq(c.program, model.programCopy) ? A2($elm$core$List$cons, c, model.history) : A2(
-		$elm$core$List$cons,
-		c,
-		A2(
-			$elm$core$List$cons,
-			_Utils_update(
-				c,
-				{program: model.programCopy}),
-			model.history));
-	return go(
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Model$start,
+		A2($elm$core$Basics$composeR, $author$project$Model$updateHistory, go));
+}();
+var $author$project$Model$fracX = function (m) {
+	var _v0 = m.dragX;
+	if (_v0.$ === 'Static') {
+		var f = _v0.a;
+		return f;
+	} else {
+		var f = _v0.a;
+		return f;
+	}
+};
+var $author$project$Model$fracY = function (m) {
+	var _v0 = m.dragY;
+	if (_v0.$ === 'Static') {
+		var f = _v0.a;
+		return f;
+	} else {
+		var f = _v0.a;
+		return f;
+	}
+};
+var $author$project$Model$reloadProgram = function (m) {
+	return A3(
+		$author$project$Model$updateConfig,
+		false,
+		$author$project$Model$initConfig(m.savedProgram),
+		m);
+};
+var $author$project$Model$reset = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Model$stop,
+	A2($elm$core$Basics$composeR, $author$project$Model$reloadProgram, $author$project$Model$clearHistory));
+var $author$project$Model$save = function (m) {
+	var c = m.config;
+	return A3(
+		$author$project$Model$updateConfig,
+		false,
 		_Utils_update(
-			model,
-			{going: true, history: h}));
+			c,
+			{program: m.savedProgram}),
+		m);
 };
-var $author$project$Main$reset = function (m) {
-	return _Utils_update(
-		m,
-		{
-			config: $author$project$Main$initConfig(m.savedProgram),
-			going: false,
-			history: _List_Nil,
-			programCopy: m.savedProgram
-		});
-};
-var $author$project$Main$toFraction = function (s) {
-	if (s.$ === 'Static') {
-		var f = s.a;
-		return f;
-	} else {
-		var f = s.a;
-		return f;
-	}
-};
-var $author$project$Main$undo = function (m) {
-	var _v0 = m.history;
-	if (_v0.b) {
-		var last = _v0.a;
-		var rest = _v0.b;
-		return _Utils_update(
-			m,
-			{config: last, history: rest, programCopy: last.program});
-	} else {
-		return m;
-	}
-};
-var $author$project$Main$update = F2(
-	function (msg, m) {
-		var mk = function (x) {
-			return _Utils_Tuple2(x, $elm$core$Platform$Cmd$none);
-		};
-		switch (msg.$) {
-			case 'Step':
-				return mk(
-					A2($author$project$Main$step, true, m));
-			case 'Eval':
-				return mk(
-					$author$project$Main$eval(m));
-			case 'Undo':
-				return mk(
-					$author$project$Main$undo(m));
-			case 'Reset':
-				return mk(
-					$author$project$Main$reset(m));
-			case 'Start':
-				return mk(
-					_Utils_update(
-						m,
-						{going: true}));
-			case 'Stop':
-				return mk(
-					_Utils_update(
-						m,
-						{going: false}));
-			case 'Toggle':
-				return mk(
-					_Utils_update(
-						m,
-						{going: !m.going}));
-			case 'Save':
-				return mk(
-					_Utils_update(
-						m,
-						{history: _List_Nil, savedProgram: m.config.program}));
-			case 'Change':
-				var p = msg.a;
-				var c = m.config;
-				return mk(
-					_Utils_update(
-						m,
-						{
-							config: _Utils_update(
-								c,
-								{program: p})
-						}));
-			case 'Tick':
-				return m.going ? mk(
-					A2($author$project$Main$step, false, m)) : mk(m);
-			case 'ClearConsole':
-				return mk(
-					_Utils_update(
-						m,
-						{trace: _List_Nil}));
-			case 'ClearData':
-				var c = m.config;
-				var newC = _Utils_update(
-					c,
-					{env: $author$project$Diane$emptyEnv, stack: _List_Nil});
-				return mk(
-					_Utils_update(
-						m,
-						{
-							config: newC,
-							history: A2($elm$core$List$cons, c, m.history)
-						}));
-			case 'DragStart':
-				return mk(
-					_Utils_update(
-						m,
-						{
-							dragState: $author$project$Main$Moving(
-								$author$project$Main$toFraction(m.dragState))
-						}));
-			case 'DragMove':
-				var isDown = msg.a;
-				var frac = msg.b;
-				return mk(
-					_Utils_update(
-						m,
-						{
-							dragState: isDown ? $author$project$Main$Moving(frac) : $author$project$Main$Static(
-								$author$project$Main$toFraction(m.dragState))
-						}));
-			case 'DragStop':
-				var frac = msg.a;
-				return mk(
-					_Utils_update(
-						m,
-						{
-							dragState: $author$project$Main$Static(frac)
-						}));
-			case 'DragStartY':
-				return mk(
-					_Utils_update(
-						m,
-						{
-							dragStateY: $author$project$Main$Moving(
-								$author$project$Main$toFraction(m.dragStateY))
-						}));
-			case 'DragMoveY':
-				var isDown = msg.a;
-				var frac = msg.b;
-				return mk(
-					_Utils_update(
-						m,
-						{
-							dragStateY: isDown ? $author$project$Main$Moving(frac) : $author$project$Main$Static(
-								$author$project$Main$toFraction(m.dragStateY))
-						}));
-			default:
-				var frac = msg.a;
-				return mk(
-					_Utils_update(
-						m,
-						{
-							dragStateY: $author$project$Main$Static(frac)
-						}));
+var $author$project$Model$popHistoryAndThen = F2(
+	function (go, m) {
+		var _v0 = m.history;
+		if (!_v0.b) {
+			return m;
+		} else {
+			var last = _v0.a;
+			var rest = _v0.b;
+			return A2(
+				go,
+				last,
+				_Utils_update(
+					m,
+					{history: rest}));
 		}
 	});
-var $author$project$Main$Eval = {$: 'Eval'};
-var $author$project$Main$Reset = {$: 'Reset'};
-var $author$project$Main$Step = {$: 'Step'};
-var $author$project$Main$Undo = {$: 'Undo'};
+var $author$project$Model$undo = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Model$stop,
+	$author$project$Model$popHistoryAndThen(
+		$author$project$Model$updateConfig(false)));
+var $author$project$Update$update_ = function (msg) {
+	switch (msg.$) {
+		case 'Step':
+			return $author$project$Model$evalStep(true);
+		case 'Eval':
+			return $author$project$Model$eval;
+		case 'Undo':
+			return $author$project$Model$undo;
+		case 'Reset':
+			return $author$project$Model$reset;
+		case 'Save':
+			return A2(
+				$elm$core$Basics$composeR,
+				$author$project$Model$save,
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Model$clearHistory,
+					$author$project$Model$trace('Program saved (and history cleared)')));
+		case 'Change':
+			var newProgram = msg.a;
+			return $author$project$Model$changeProgram(newProgram);
+		case 'ClearConsole':
+			return $author$project$Model$clearTrace;
+		case 'ClearData':
+			return A2(
+				$elm$core$Basics$composeR,
+				$author$project$Model$updateHistory,
+				A2($elm$core$Basics$composeR, $author$project$Model$clearStack, $author$project$Model$clearEnv));
+		case 'DragStartX':
+			return function (m) {
+				return _Utils_update(
+					m,
+					{
+						dragX: $author$project$Model$Moving(
+							$author$project$Model$fracX(m))
+					});
+			};
+		case 'DragMoveX':
+			var isDown = msg.a;
+			var frac = msg.b;
+			return function (m) {
+				return _Utils_update(
+					m,
+					{
+						dragX: isDown ? $author$project$Model$Moving(frac) : $author$project$Model$Static(
+							$author$project$Model$fracX(m))
+					});
+			};
+		case 'DragStopX':
+			var frac = msg.a;
+			return function (m) {
+				return _Utils_update(
+					m,
+					{
+						dragX: $author$project$Model$Static(frac)
+					});
+			};
+		case 'DragStartY':
+			return function (m) {
+				return _Utils_update(
+					m,
+					{
+						dragY: $author$project$Model$Moving(
+							$author$project$Model$fracY(m))
+					});
+			};
+		case 'DragMoveY':
+			var isDown = msg.a;
+			var frac = msg.b;
+			return function (m) {
+				return _Utils_update(
+					m,
+					{
+						dragY: isDown ? $author$project$Model$Moving(frac) : $author$project$Model$Static(
+							$author$project$Model$fracY(m))
+					});
+			};
+		default:
+			var frac = msg.a;
+			return function (m) {
+				return _Utils_update(
+					m,
+					{
+						dragY: $author$project$Model$Static(frac)
+					});
+			};
+	}
+};
+var $author$project$Update$update = function (msg) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Update$update_(msg),
+		$author$project$Update$noCmd);
+};
+var $author$project$Update$Eval = {$: 'Eval'};
+var $author$project$Update$Reset = {$: 'Reset'};
+var $author$project$Update$Step = {$: 'Step'};
+var $author$project$Update$Undo = {$: 'Undo'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
@@ -8413,86 +8262,89 @@ var $elm$html$Html$Events$onClick = function (msg) {
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$buttonBar = function (m) {
+var $author$project$View$buttons = function (m) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$id('button-bar')
+				$elm$html$Html$Attributes$id('buttons')
 			]),
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$div,
+				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$id('buttons')
+						$elm$html$Html$Events$onClick($author$project$Update$Step),
+						$elm$html$Html$Attributes$disabled(
+						$author$project$Diane$done(m.config))
 					]),
 				_List_fromArray(
 					[
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$Step),
-								$elm$html$Html$Attributes$disabled(
-								$author$project$Diane$done(m.config))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('step')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$Undo),
-								$elm$html$Html$Attributes$disabled(
-								$elm$core$List$isEmpty(m.history))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('undo')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$Eval),
-								$elm$html$Html$Attributes$disabled(
-								$author$project$Diane$done(m.config))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('run')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$Reset),
-								$elm$html$Html$Attributes$disabled(
-								_Utils_eq(m.config.program, m.savedProgram))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('reset')
-							]))
+						$elm$html$Html$text('step')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Update$Undo),
+						$elm$html$Html$Attributes$disabled(
+						$elm$core$List$isEmpty(m.history))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('undo')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Update$Eval),
+						$elm$html$Html$Attributes$disabled(
+						$author$project$Diane$done(m.config))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('run')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Update$Reset),
+						$elm$html$Html$Attributes$disabled(
+						$elm$core$List$isEmpty(m.history))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('reset')
 					]))
 			]));
 };
-var $author$project$Main$ClearConsole = {$: 'ClearConsole'};
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Main$toPointerEvents = function (s) {
-	if (s.$ === 'Static') {
+var $author$project$Update$ClearConsole = {$: 'ClearConsole'};
+var $author$project$View$pEventY = function (m) {
+	var _v0 = m.dragY;
+	if (_v0.$ === 'Static') {
 		return 'auto';
 	} else {
 		return 'none';
 	}
 };
-var $author$project$Main$console = function (m) {
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $author$project$View$percent = function (f) {
+	return $elm$core$String$fromFloat(
+		A2(
+			$elm$core$Basics$max,
+			5.0,
+			A2($elm$core$Basics$min, 100 * f, 95.0))) + '%';
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$View$console = function (m) {
 	var line = function (s) {
 		return A2(
 			$elm$html$Html$div,
@@ -8510,16 +8362,16 @@ var $author$project$Main$console = function (m) {
 				A2(
 				$elm$html$Html$Attributes$style,
 				'pointer-events',
-				$author$project$Main$toPointerEvents(m.dragStateY)),
+				$author$project$View$pEventY(m)),
 				A2(
 				$elm$html$Html$Attributes$style,
 				'user-select',
-				$author$project$Main$toPointerEvents(m.dragStateY)),
+				$author$project$View$pEventY(m)),
 				A2(
 				$elm$html$Html$Attributes$style,
 				'height',
-				$elm$core$String$fromFloat(
-					100 * (1 - $author$project$Main$toFraction(m.dragStateY))) + '%')
+				$author$project$View$percent(
+					1 - $author$project$Model$fracY(m)))
 			]),
 		_List_fromArray(
 			[
@@ -8549,7 +8401,7 @@ var $author$project$Main$console = function (m) {
 						$elm$html$Html$Attributes$id('clear-console'),
 						$elm$html$Html$Attributes$disabled(
 						$elm$core$List$isEmpty(m.trace)),
-						$elm$html$Html$Events$onClick($author$project$Main$ClearConsole)
+						$elm$html$Html$Events$onClick($author$project$Update$ClearConsole)
 					]),
 				_List_fromArray(
 					[
@@ -8557,14 +8409,80 @@ var $author$project$Main$console = function (m) {
 					]))
 			]));
 };
-var $author$project$Main$DragStartY = {$: 'DragStartY'};
+var $author$project$Update$Save = {$: 'Save'};
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$textarea = _VirtualDom_node('textarea');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$View$editorWindow = function (m) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$id('editor-window')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$textarea,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id('editor'),
+						$elm$html$Html$Attributes$placeholder('Write your program here...'),
+						$elm$html$Html$Attributes$value(m.config.program),
+						$elm$html$Html$Attributes$disabled(m.going),
+						$elm$html$Html$Events$onInput($author$project$Update$Change)
+					]),
+				_List_Nil),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id('save-button'),
+						$elm$html$Html$Events$onClick($author$project$Update$Save),
+						$elm$html$Html$Attributes$disabled(
+						_Utils_eq(m.savedProgram, m.config.program))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('save')
+					]))
+			]));
+};
+var $author$project$Update$DragStartY = {$: 'DragStartY'};
 var $elm$html$Html$Events$onMouseDown = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
 		'mousedown',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Main$hsplit = function (m) {
+var $author$project$View$hsplit = function (m) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -8573,9 +8491,9 @@ var $author$project$Main$hsplit = function (m) {
 				A2(
 				$elm$html$Html$Attributes$style,
 				'top',
-				$elm$core$String$fromFloat(
-					100 * $author$project$Main$toFraction(m.dragStateY)) + '%'),
-				$elm$html$Html$Events$onMouseDown($author$project$Main$DragStartY)
+				$author$project$View$percent(
+					$author$project$Model$fracY(m))),
+				$elm$html$Html$Events$onMouseDown($author$project$Update$DragStartY)
 			]),
 		_List_fromArray(
 			[
@@ -8583,14 +8501,18 @@ var $author$project$Main$hsplit = function (m) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'margin-top', '5px'),
-						A2($elm$html$Html$Attributes$style, 'margin-left', '-5px'),
-						A2($elm$html$Html$Attributes$style, 'width', 'calc(100% + 5px)'),
-						A2($elm$html$Html$Attributes$style, 'height', '1px'),
-						A2($elm$html$Html$Attributes$style, 'background-color', 'black')
+						$elm$html$Html$Attributes$id('hline')
 					]),
 				_List_Nil)
 			]));
+};
+var $author$project$View$pEventX = function (m) {
+	var _v0 = m.dragX;
+	if (_v0.$ === 'Static') {
+		return 'auto';
+	} else {
+		return 'none';
+	}
 };
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
 	return {$: 'MayPreventDefault', a: a};
@@ -8605,34 +8527,34 @@ var $elm$html$Html$Events$preventDefaultOn = F2(
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm$html$Html$Events$keyCode = A2($elm$json$Json$Decode$field, 'keyCode', $elm$json$Json$Decode$int);
-var $author$project$Main$Backslash = {$: 'Backslash'};
-var $author$project$Main$Backtick = {$: 'Backtick'};
-var $author$project$Main$Option = {$: 'Option'};
-var $author$project$Main$keycodes = $elm$core$Dict$fromList(
+var $author$project$Update$Backslash = {$: 'Backslash'};
+var $author$project$Update$Backtick = {$: 'Backtick'};
+var $author$project$Update$Option = {$: 'Option'};
+var $author$project$Update$keycodes = $elm$core$Dict$fromList(
 	_List_fromArray(
 		[
-			_Utils_Tuple2(220, $author$project$Main$Backslash),
-			_Utils_Tuple2(18, $author$project$Main$Option),
-			_Utils_Tuple2(192, $author$project$Main$Backtick)
+			_Utils_Tuple2(220, $author$project$Update$Backslash),
+			_Utils_Tuple2(18, $author$project$Update$Option),
+			_Utils_Tuple2(192, $author$project$Update$Backtick)
 		]));
-var $author$project$Main$shortcuts = function () {
+var $author$project$Update$shortcuts = function () {
 	var mk = function (m) {
 		return $elm$json$Json$Decode$succeed(
 			_Utils_Tuple2(m, true));
 	};
 	var go = function (key) {
-		var _v0 = A2($elm$core$Dict$get, key, $author$project$Main$keycodes);
+		var _v0 = A2($elm$core$Dict$get, key, $author$project$Update$keycodes);
 		if (_v0.$ === 'Just') {
 			switch (_v0.a.$) {
 				case 'Backslash':
 					var _v1 = _v0.a;
-					return mk($author$project$Main$Step);
+					return mk($author$project$Update$Step);
 				case 'Option':
 					var _v2 = _v0.a;
-					return mk($author$project$Main$Eval);
+					return mk($author$project$Update$Eval);
 				default:
 					var _v3 = _v0.a;
-					return mk($author$project$Main$Undo);
+					return mk($author$project$Update$Undo);
 			}
 		} else {
 			return $elm$json$Json$Decode$fail('unknown-shortcut');
@@ -8640,7 +8562,7 @@ var $author$project$Main$shortcuts = function () {
 	};
 	return A2($elm$json$Json$Decode$andThen, go, $elm$html$Html$Events$keyCode);
 }();
-var $author$project$Main$ClearData = {$: 'ClearData'};
+var $author$project$Update$ClearData = {$: 'ClearData'};
 var $author$project$Diane$valString = function (v) {
 	if (v.$ === 'Number') {
 		var n = v.a;
@@ -8649,7 +8571,7 @@ var $author$project$Diane$valString = function (v) {
 		return '<function>';
 	}
 };
-var $author$project$Main$envHtmls = function (e) {
+var $author$project$View$envHtmls = function (e) {
 	var go = function (bs) {
 		if (!bs.b) {
 			return _List_Nil;
@@ -8698,7 +8620,7 @@ var $author$project$Diane$stackStr = function (s) {
 	}
 };
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Main$viz = function (m) {
+var $author$project$View$viz = function (m) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -8707,16 +8629,16 @@ var $author$project$Main$viz = function (m) {
 				A2(
 				$elm$html$Html$Attributes$style,
 				'pointer-events',
-				$author$project$Main$toPointerEvents(m.dragStateY)),
+				$author$project$View$pEventY(m)),
 				A2(
 				$elm$html$Html$Attributes$style,
 				'user-select',
-				$author$project$Main$toPointerEvents(m.dragStateY)),
+				$author$project$View$pEventY(m)),
 				A2(
 				$elm$html$Html$Attributes$style,
 				'height',
-				$elm$core$String$fromFloat(
-					100 * $author$project$Main$toFraction(m.dragStateY)) + '%')
+				$author$project$View$percent(
+					$author$project$Model$fracY(m)))
 			]),
 		_List_fromArray(
 			[
@@ -8762,7 +8684,7 @@ var $author$project$Main$viz = function (m) {
 									_List_fromArray(
 										[x]));
 							},
-							$author$project$Main$envHtmls(m.config.env)))
+							$author$project$View$envHtmls(m.config.env)))
 					])),
 				A2(
 				$elm$html$Html$button,
@@ -8771,7 +8693,7 @@ var $author$project$Main$viz = function (m) {
 						$elm$html$Html$Attributes$id('clear-data'),
 						$elm$html$Html$Attributes$disabled(
 						$elm$core$List$isEmpty(m.config.stack) && $elm$core$Dict$isEmpty(m.config.env)),
-						$elm$html$Html$Events$onClick($author$project$Main$ClearData)
+						$elm$html$Html$Events$onClick($author$project$Update$ClearData)
 					]),
 				_List_fromArray(
 					[
@@ -8779,8 +8701,8 @@ var $author$project$Main$viz = function (m) {
 					]))
 			]));
 };
-var $author$project$Main$DragStart = {$: 'DragStart'};
-var $author$project$Main$vsplit = function (m) {
+var $author$project$Update$DragStartX = {$: 'DragStartX'};
+var $author$project$View$vsplit = function (m) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -8789,9 +8711,9 @@ var $author$project$Main$vsplit = function (m) {
 				A2(
 				$elm$html$Html$Attributes$style,
 				'left',
-				$elm$core$String$fromFloat(
-					100 * $author$project$Main$toFraction(m.dragState)) + '%'),
-				$elm$html$Html$Events$onMouseDown($author$project$Main$DragStart)
+				$author$project$View$percent(
+					$author$project$Model$fracX(m))),
+				$elm$html$Html$Events$onMouseDown($author$project$Update$DragStartX)
 			]),
 		_List_fromArray(
 			[
@@ -8799,87 +8721,18 @@ var $author$project$Main$vsplit = function (m) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'margin', 'auto'),
-						A2($elm$html$Html$Attributes$style, 'width', '1px'),
-						A2($elm$html$Html$Attributes$style, 'height', '100%'),
-						A2($elm$html$Html$Attributes$style, 'background-color', 'black')
+						$elm$html$Html$Attributes$id('vline')
 					]),
 				_List_Nil)
 			]));
 };
-var $author$project$Main$Save = {$: 'Save'};
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$html$Html$textarea = _VirtualDom_node('textarea');
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $author$project$Main$window = function (m) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$id('editor-window')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$textarea,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$id('editor'),
-						$elm$html$Html$Attributes$placeholder('Write your program here...'),
-						$elm$html$Html$Attributes$value(m.config.program),
-						$elm$html$Html$Attributes$disabled(m.going),
-						$elm$html$Html$Events$onInput($author$project$Main$Change)
-					]),
-				_List_Nil),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$id('save-button'),
-						$elm$html$Html$Events$onClick($author$project$Main$Save),
-						$elm$html$Html$Attributes$disabled(
-						_Utils_eq(m.savedProgram, m.config.program))
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('save')
-					]))
-			]));
-};
-var $author$project$Main$view = function (m) {
+var $author$project$View$view = function (m) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
 				$elm$html$Html$Attributes$id('view'),
-				A2($elm$html$Html$Events$preventDefaultOn, 'keydown', $author$project$Main$shortcuts)
+				A2($elm$html$Html$Events$preventDefaultOn, 'keydown', $author$project$Update$shortcuts)
 			]),
 		_List_fromArray(
 			[
@@ -8891,20 +8744,20 @@ var $author$project$Main$view = function (m) {
 						A2(
 						$elm$html$Html$Attributes$style,
 						'pointer-events',
-						$author$project$Main$toPointerEvents(m.dragState)),
+						$author$project$View$pEventX(m)),
 						A2(
 						$elm$html$Html$Attributes$style,
 						'user-select',
-						$author$project$Main$toPointerEvents(m.dragState)),
+						$author$project$View$pEventX(m)),
 						A2(
 						$elm$html$Html$Attributes$style,
 						'width',
-						$elm$core$String$fromFloat(
-							100 * $author$project$Main$toFraction(m.dragState)) + '%')
+						$author$project$View$percent(
+							$author$project$Model$fracX(m)))
 					]),
 				_List_fromArray(
 					[
-						$author$project$Main$window(m),
+						$author$project$View$editorWindow(m),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -8912,9 +8765,9 @@ var $author$project$Main$view = function (m) {
 								$elm$html$Html$Attributes$id('left-split')
 							]),
 						_List_Nil),
-						$author$project$Main$buttonBar(m)
+						$author$project$View$buttons(m)
 					])),
-				$author$project$Main$vsplit(m),
+				$author$project$View$vsplit(m),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -8923,25 +8776,30 @@ var $author$project$Main$view = function (m) {
 						A2(
 						$elm$html$Html$Attributes$style,
 						'pointer-events',
-						$author$project$Main$toPointerEvents(m.dragState)),
+						$author$project$View$pEventX(m)),
 						A2(
 						$elm$html$Html$Attributes$style,
 						'user-select',
-						$author$project$Main$toPointerEvents(m.dragState)),
+						$author$project$View$pEventX(m)),
 						A2(
 						$elm$html$Html$Attributes$style,
 						'width',
-						$elm$core$String$fromFloat(
-							100 * (1.0 - $author$project$Main$toFraction(m.dragState))) + '%')
+						$author$project$View$percent(
+							1 - $author$project$Model$fracX(m)))
 					]),
 				_List_fromArray(
 					[
-						$author$project$Main$viz(m),
-						$author$project$Main$hsplit(m),
-						$author$project$Main$console(m)
+						$author$project$View$viz(m),
+						$author$project$View$hsplit(m),
+						$author$project$View$console(m)
 					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
-	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
+	{
+		init: A2($elm$core$Basics$composeR, $author$project$Model$initModel, $author$project$Update$noCmd),
+		subscriptions: $author$project$Update$subscriptions,
+		update: $author$project$Update$update,
+		view: $author$project$View$view
+	});
 _Platform_export({'Main':{'init':$author$project$Main$main($elm$json$Json$Decode$string)(0)}});}(this));

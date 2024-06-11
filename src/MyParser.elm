@@ -1,4 +1,4 @@
-module MyParser exposing (parse)
+module MyParser exposing (parse, Output)
 
 import Diane exposing (..)
 import Parser exposing (..)
