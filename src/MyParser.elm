@@ -1,4 +1,4 @@
-module MyParser exposing (parse, Output)
+module MyParser exposing (parse, ParserOutput)
 
 import Diane exposing (..)
 import Parser exposing (..)
@@ -71,7 +71,7 @@ parsePre symb com = succeed com
   |. spaces
   |= parseIdent
 
-type alias Output =
+type alias ParserOutput =
   { command : Command
   , unconsumed : Prog
   }
@@ -109,7 +109,7 @@ parseCommand = oneOf
 
 parse =
   let
-    go = succeed Output
+    go = succeed ParserOutput
       |. spaces
       |= parseCommand
       |. spaces

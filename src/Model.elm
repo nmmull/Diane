@@ -57,13 +57,13 @@ clearEnv m =
 panic : String -> Model -> Model
 panic msg = maybeTrace (Just msg) >> stop
 
-parseAndThen : (Output -> Model -> Model) -> Model -> Model
+parseAndThen : (ParserOutput -> Model -> Model) -> Model -> Model
 parseAndThen go model =
     case parse model.config.program of
         Ok out -> go out model
         Err _ -> panic (mkErrMsg "Parse Error") model
 
-evalAndThen : (( Config, Maybe String ) -> Model -> Model) -> Output -> Model -> Model
+evalAndThen : (( Config, Maybe String ) -> Model -> Model) -> ParserOutput -> Model -> Model
 evalAndThen go { command, unconsumed } ({ config } as model ) =
     case evalCommand command { config | program = unconsumed } of
         Ok out -> go out model
@@ -85,15 +85,13 @@ updateHistory m = updateConfig True m.config m
 
 stop m = { m | going = False }
 start m = { m | going = True }
-save m =
-    let c = m.config in
-    updateConfig False { c | program = m.savedProgram } m
+save m = { m | savedProgram = m.config.program }
 trace msg m = { m | trace = msg :: m.trace }
 reset = stop >> reloadProgram >> clearHistory
 undo = stop >> popHistoryAndThen (updateConfig False)
 
-evalStep : Bool -> Model -> Model
-evalStep withHistory =
+step : Bool -> Model -> Model
+step withHistory =
     let
         go ( nextConfig, maybeMsg ) =
             updateConfig withHistory nextConfig
@@ -106,7 +104,7 @@ evalStep withHistory =
 
 eval : Model -> Model
 eval =
-    let go m = if m.going then go (evalStep False m) else m in
+    let go m = if m.going then go (step False m) else m in
     start >> updateHistory >> go
 
 initConfig prog =

@@ -28,7 +28,7 @@ noCmd x = ( x, Cmd.none )
 update_ : Msg -> Model -> Model
 update_ msg =
     case msg of
-        Step -> evalStep True
+        Step -> step True
         Eval -> eval
         Undo -> undo
         Reset -> reset
@@ -54,6 +54,8 @@ update_ msg =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg = update_ msg >> noCmd
+
+{- Based on the example: https://github.com/elm/browser/blob/1.0.2/examples/src/Drag.elm -}
 
 port messageReceiver : (String -> msg) -> Sub msg
 
@@ -119,71 +121,3 @@ shortcuts =
         Just Backtick -> mk Undo
         _ -> D.fail "unknown-shortcut"
   in D.andThen go keyCode
-
--- update : Msg -> Model -> ( Model, Cmd Msg )
--- update msg m =
---     case msg of
---         Step -> noCmd (evalStep True m)
---         Eval -> noCmd (eval m)
---         Undo -> noCmd (undo m)
---         Reset -> noCmd (reset m)
---         Save ->
---             noCmd (m |> { m | savedProgram = m.config.program, history = []} -- trace: History has been reset
---         Change p ->
---           let c = m.config in
---           noCmd { m | config = { c | program = p } }
---         Tick _ -> if m.going then noCmd (evalStep False m) else noCmd m
---         ClearConsole ->
---           noCmd { m | trace = [] }
---         ClearData ->
---           let c = m.config in
---           let newC = { c | stack = [], env = emptyEnv } in
---           noCmd { m | config = newC, history = c :: m.history }
---         DragStart ->
---           noCmd { m | dragX = Moving (toFraction m.dragX) }
---         DragMove isDown frac ->
---           noCmd { m | dragX = if isDown then Moving frac else Static (toFraction m.dragX) }
---         DragStop frac ->
---           noCmd { m | dragX = Static frac }
---         DragStartY ->
---           noCmd { m | dragY = Moving (toFraction m.dragY) }
---         DragMoveY isDown frac ->
---           noCmd { m | dragY = if isDown then Moving frac else Static (toFraction m.dragY) }
---         DragStopY frac ->
---           noCmd { m | dragY = Static frac }
-
-
-
-{-
-
-
-subscriptions : Model -> Sub Msg
-subscriptions m =
-  let
-    dragSubs =
-      case m.dragX of
-        Static _ -> Sub.none
-        Moving _ ->
-          Sub.batch
-            [ E.onMouseMove (Decode.map2 DragMove decodeButtons decodeFraction)
-            , E.onMouseUp (Decode.map DragStop decodeFraction)
-            ]
-  in
-  let
-    dragSubsY =
-      case m.dragY of
-        Static _ -> Sub.none
-        Moving _ ->
-          Sub.batch
-            [ E.onMouseMove (Decode.map2 DragMoveY decodeButtons decodeFractionY)
-            , E.onMouseUp (Decode.map DragStopY decodeFractionY)
-            ]
-  in
-  Sub.batch
-    [ Time.every 100 Tick
-    , messageReceiver Change
-    , dragSubs
-    , dragSubsY
-    ]
-
--}

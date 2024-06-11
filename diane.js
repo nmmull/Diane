@@ -5853,6 +5853,11 @@ var $author$project$Model$clearTrace = function (m) {
 		m,
 		{trace: _List_Nil});
 };
+var $author$project$Model$start = function (m) {
+	return _Utils_update(
+		m,
+		{going: true});
+};
 var $author$project$Diane$done = function (c) {
 	return $elm$core$String$isEmpty(c.program);
 };
@@ -6790,7 +6795,7 @@ var $author$project$Model$ifThenElse = F4(
 	function (f, yes, no, m) {
 		return f(m) ? yes(m) : no(m);
 	});
-var $author$project$MyParser$Output = F2(
+var $author$project$MyParser$ParserOutput = F2(
 	function (command, unconsumed) {
 		return {command: command, unconsumed: unconsumed};
 	});
@@ -7975,7 +7980,7 @@ var $author$project$MyParser$parse = function () {
 			$elm$parser$Parser$keeper,
 			A2(
 				$elm$parser$Parser$ignorer,
-				$elm$parser$Parser$succeed($author$project$MyParser$Output),
+				$elm$parser$Parser$succeed($author$project$MyParser$ParserOutput),
 				$elm$parser$Parser$spaces),
 			A2($elm$parser$Parser$ignorer, $author$project$MyParser$parseCommand, $elm$parser$Parser$spaces)),
 		$author$project$MyParser$unconsumed);
@@ -8016,7 +8021,7 @@ var $author$project$Model$updateConfig = F3(
 			m,
 			{config: config, programCopy: config.program});
 	});
-var $author$project$Model$evalStep = function (withHistory) {
+var $author$project$Model$step = function (withHistory) {
 	var go = function (_v0) {
 		var nextConfig = _v0.a;
 		var maybeMsg = _v0.b;
@@ -8037,11 +8042,6 @@ var $author$project$Model$evalStep = function (withHistory) {
 		$author$project$Model$parseAndThen(
 			$author$project$Model$evalAndThen(go)));
 };
-var $author$project$Model$start = function (m) {
-	return _Utils_update(
-		m,
-		{going: true});
-};
 var $author$project$Model$updateHistory = function (m) {
 	return A3($author$project$Model$updateConfig, true, m.config, m);
 };
@@ -8050,7 +8050,7 @@ var $author$project$Model$eval = function () {
 		go:
 		while (true) {
 			if (m.going) {
-				var $temp$m = A2($author$project$Model$evalStep, false, m);
+				var $temp$m = A2($author$project$Model$step, false, m);
 				m = $temp$m;
 				continue go;
 			} else {
@@ -8095,14 +8095,9 @@ var $author$project$Model$reset = A2(
 	$author$project$Model$stop,
 	A2($elm$core$Basics$composeR, $author$project$Model$reloadProgram, $author$project$Model$clearHistory));
 var $author$project$Model$save = function (m) {
-	var c = m.config;
-	return A3(
-		$author$project$Model$updateConfig,
-		false,
-		_Utils_update(
-			c,
-			{program: m.savedProgram}),
-		m);
+	return _Utils_update(
+		m,
+		{savedProgram: m.config.program});
 };
 var $author$project$Model$popHistoryAndThen = F2(
 	function (go, m) {
@@ -8128,7 +8123,7 @@ var $author$project$Model$undo = A2(
 var $author$project$Update$update_ = function (msg) {
 	switch (msg.$) {
 		case 'Step':
-			return $author$project$Model$evalStep(true);
+			return $author$project$Model$step(true);
 		case 'Eval':
 			return $author$project$Model$eval;
 		case 'Undo':
