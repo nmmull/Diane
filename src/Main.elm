@@ -15,11 +15,25 @@ type alias Model =
   { config : Config
   , going : Bool
   , savedProgram : Prog
+  , programCopy : Prog
   , history : List Config
   , dragState : DragState
   , dragStateY : DragState
   , trace : List String
   }
+
+pushHistory : Model -> Model
+pushHistory m =
+  let c = m.config in
+  if c.program == m.programCopy
+  then { m | history = c :: m.history }
+  else
+    { m
+    | history =
+      c
+      :: { c | program = m.programCopy }
+      :: m.history
+    }
 
 type DragState
   = Static Float
@@ -43,6 +57,13 @@ isMoving m =
     Moving _ -> True
     _ -> False
 
+panic : Model -> String -> Model
+panic m msg =
+  { m
+  | trace = msg :: m.trace
+  , going = False
+  }
+
 step : Bool -> Model -> Model
 step updateHistory m =
   let
@@ -53,30 +74,25 @@ step updateHistory m =
             Ok ( nextConfig, mmsg ) ->
               { model
               | config = nextConfig
+              , programCopy = nextConfig.program
               , trace =
                   case mmsg of
                     Just msg -> msg :: trace
                     _ -> trace
               , history =
                 if updateHistory
-                then nextConfig :: history
+                then
+                  if config.program == model.programCopy
+                  then config :: history
+                  else config :: { config | program = model.programCopy } :: history
                 else history
               }
-            Err e -> { m | trace = errMsg e :: trace }
-        Err _ -> { m | trace = (mkErrMsg "Parse error") :: trace }
+            Err e -> panic m (errMsg e)
+        Err _ -> panic m (mkErrMsg "Parse error")
   in
   if done m.config
   then { m | going = False }
-  else
-    let
-      next =
-        case m.history of
-          [] -> m
-          last :: _ ->
-            if m.config.program /= last.program
-            then { m | history = m.config :: m.history }
-            else m
-    in go next
+  else go m
 
 eval : Model -> Model
 eval model =
@@ -86,26 +102,28 @@ eval model =
       then go (step False m)
       else m
   in
-  let out = go { model | going = True } in
-  { out | history = out.config :: model.history }
+  let c = model.config in
+  let
+    h =
+      if c.program == model.programCopy
+      then c :: model.history
+      else c :: { c | program = model.programCopy } :: model.history
+  in go { model | going = True, history = h }
 
 reset : Model -> Model
 reset m =
   { m
   | config = initConfig m.savedProgram
   , going = False
+  , programCopy = m.savedProgram
+  , history = []
   }
 
 undo : Model -> Model
 undo m =
-  let c = m.config in
   case m.history of
-    curr :: last :: rest ->
-      { m
-      | config = last
-      , history = last :: rest
-      }
-    _ -> reset m
+    last :: rest -> { m | config = last, history = rest, programCopy = last.program }
+    _ -> m
 
 initConfig prog =
   { stack = []
@@ -115,10 +133,11 @@ initConfig prog =
 
 initModel prog =
   { config = initConfig prog
+  , programCopy = prog
   , going = False
   , savedProgram = prog
   , trace = []
-  , history = [initConfig prog]
+  , history = []
   , dragState = Static 0.5
   , dragStateY = Static 0.7
   }
@@ -204,7 +223,7 @@ update msg m =
     Start -> mk { m | going = True }
     Stop -> mk { m | going = False }
     Toggle -> mk { m | going = not m.going }
-    Save -> mk { m | savedProgram = m.config.program }
+    Save -> mk { m | savedProgram = m.config.program, history = []} -- trace: History has been reset
     Change p ->
       let c = m.config in
       mk { m | config = { c | program = p } }
@@ -214,7 +233,7 @@ update msg m =
     ClearData ->
       let c = m.config in
       let newC = { c | stack = [], env = emptyEnv } in
-      mk { m | config = newC, history = newC :: m.history }
+      mk { m | config = newC, history = c :: m.history }
     DragStart ->
       mk { m | dragState = Moving (toFraction m.dragState) }
     DragMove isDown frac ->
@@ -283,7 +302,7 @@ buttonBar m =
         [ text "step" ]
       , button
         [ onClick Undo
-        , disabled (List.length m.history <= 1)
+        , disabled (List.isEmpty m.history)
         ]
         [ text "undo" ]
       , button

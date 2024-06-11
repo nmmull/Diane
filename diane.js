@@ -5350,10 +5350,8 @@ var $author$project$Main$initModel = function (prog) {
 		dragState: $author$project$Main$Static(0.5),
 		dragStateY: $author$project$Main$Static(0.7),
 		going: false,
-		history: _List_fromArray(
-			[
-				$author$project$Main$initConfig(prog)
-			]),
+		history: _List_Nil,
+		programCopy: prog,
 		savedProgram: prog,
 		trace: _List_Nil
 	};
@@ -6934,6 +6932,15 @@ var $author$project$Diane$evalCommand = F2(
 		}
 		return $elm$core$Result$Err($author$project$Diane$StackUnderflow);
 	});
+var $author$project$Main$panic = F2(
+	function (m, msg) {
+		return _Utils_update(
+			m,
+			{
+				going: false,
+				trace: A2($elm$core$List$cons, msg, m.trace)
+			});
+	});
 var $author$project$MyParser$Output = F2(
 	function (command, unconsumed) {
 		return {command: command, unconsumed: unconsumed};
@@ -8126,25 +8133,34 @@ var $author$project$Main$step = F2(
 			var config = model.config;
 			var trace = model.trace;
 			var history = model.history;
-			var _v1 = $author$project$MyParser$parse(config.program);
-			if (_v1.$ === 'Ok') {
-				var command = _v1.a.command;
-				var unconsumed = _v1.a.unconsumed;
-				var _v2 = A2(
+			var _v0 = $author$project$MyParser$parse(config.program);
+			if (_v0.$ === 'Ok') {
+				var command = _v0.a.command;
+				var unconsumed = _v0.a.unconsumed;
+				var _v1 = A2(
 					$author$project$Diane$evalCommand,
 					command,
 					_Utils_update(
 						config,
 						{program: unconsumed}));
-				if (_v2.$ === 'Ok') {
-					var _v3 = _v2.a;
-					var nextConfig = _v3.a;
-					var mmsg = _v3.b;
+				if (_v1.$ === 'Ok') {
+					var _v2 = _v1.a;
+					var nextConfig = _v2.a;
+					var mmsg = _v2.b;
 					return _Utils_update(
 						model,
 						{
 							config: nextConfig,
-							history: updateHistory ? A2($elm$core$List$cons, nextConfig, history) : history,
+							history: updateHistory ? (_Utils_eq(config.program, model.programCopy) ? A2($elm$core$List$cons, config, history) : A2(
+								$elm$core$List$cons,
+								config,
+								A2(
+									$elm$core$List$cons,
+									_Utils_update(
+										config,
+										{program: model.programCopy}),
+									history))) : history,
+							programCopy: nextConfig.program,
 							trace: function () {
 								if (mmsg.$ === 'Just') {
 									var msg = mmsg.a;
@@ -8155,47 +8171,22 @@ var $author$project$Main$step = F2(
 							}()
 						});
 				} else {
-					var e = _v2.a;
-					return _Utils_update(
+					var e = _v1.a;
+					return A2(
+						$author$project$Main$panic,
 						m,
-						{
-							trace: A2(
-								$elm$core$List$cons,
-								$author$project$Diane$errMsg(e),
-								trace)
-						});
+						$author$project$Diane$errMsg(e));
 				}
 			} else {
-				return _Utils_update(
+				return A2(
+					$author$project$Main$panic,
 					m,
-					{
-						trace: A2(
-							$elm$core$List$cons,
-							$author$project$Diane$mkErrMsg('Parse error'),
-							trace)
-					});
+					$author$project$Diane$mkErrMsg('Parse error'));
 			}
 		};
-		if ($author$project$Diane$done(m.config)) {
-			return _Utils_update(
-				m,
-				{going: false});
-		} else {
-			var next = function () {
-				var _v0 = m.history;
-				if (!_v0.b) {
-					return m;
-				} else {
-					var last = _v0.a;
-					return (!_Utils_eq(m.config.program, last.program)) ? _Utils_update(
-						m,
-						{
-							history: A2($elm$core$List$cons, m.config, m.history)
-						}) : m;
-				}
-			}();
-			return go(next);
-		}
+		return $author$project$Diane$done(m.config) ? _Utils_update(
+			m,
+			{going: false}) : go(m);
 	});
 var $author$project$Main$eval = function (model) {
 	var go = function (m) {
@@ -8210,22 +8201,29 @@ var $author$project$Main$eval = function (model) {
 			}
 		}
 	};
-	var out = go(
+	var c = model.config;
+	var h = _Utils_eq(c.program, model.programCopy) ? A2($elm$core$List$cons, c, model.history) : A2(
+		$elm$core$List$cons,
+		c,
+		A2(
+			$elm$core$List$cons,
+			_Utils_update(
+				c,
+				{program: model.programCopy}),
+			model.history));
+	return go(
 		_Utils_update(
 			model,
-			{going: true}));
-	return _Utils_update(
-		out,
-		{
-			history: A2($elm$core$List$cons, out.config, model.history)
-		});
+			{going: true, history: h}));
 };
 var $author$project$Main$reset = function (m) {
 	return _Utils_update(
 		m,
 		{
 			config: $author$project$Main$initConfig(m.savedProgram),
-			going: false
+			going: false,
+			history: _List_Nil,
+			programCopy: m.savedProgram
 		});
 };
 var $author$project$Main$toFraction = function (s) {
@@ -8238,21 +8236,15 @@ var $author$project$Main$toFraction = function (s) {
 	}
 };
 var $author$project$Main$undo = function (m) {
-	var c = m.config;
 	var _v0 = m.history;
-	if (_v0.b && _v0.b.b) {
-		var curr = _v0.a;
-		var _v1 = _v0.b;
-		var last = _v1.a;
-		var rest = _v1.b;
+	if (_v0.b) {
+		var last = _v0.a;
+		var rest = _v0.b;
 		return _Utils_update(
 			m,
-			{
-				config: last,
-				history: A2($elm$core$List$cons, last, rest)
-			});
+			{config: last, history: rest, programCopy: last.program});
 	} else {
-		return $author$project$Main$reset(m);
+		return m;
 	}
 };
 var $author$project$Main$update = F2(
@@ -8292,7 +8284,7 @@ var $author$project$Main$update = F2(
 				return mk(
 					_Utils_update(
 						m,
-						{savedProgram: m.config.program}));
+						{history: _List_Nil, savedProgram: m.config.program}));
 			case 'Change':
 				var p = msg.a;
 				var c = m.config;
@@ -8322,7 +8314,7 @@ var $author$project$Main$update = F2(
 						m,
 						{
 							config: newC,
-							history: A2($elm$core$List$cons, newC, m.history)
+							history: A2($elm$core$List$cons, c, m.history)
 						}));
 			case 'DragStart':
 				return mk(
@@ -8456,7 +8448,7 @@ var $author$project$Main$buttonBar = function (m) {
 							[
 								$elm$html$Html$Events$onClick($author$project$Main$Undo),
 								$elm$html$Html$Attributes$disabled(
-								$elm$core$List$length(m.history) <= 1)
+								$elm$core$List$isEmpty(m.history))
 							]),
 						_List_fromArray(
 							[
