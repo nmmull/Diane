@@ -8289,7 +8289,7 @@ var $author$project$Update$update_ = function (msg) {
 				A2(
 					$elm$core$Basics$composeR,
 					$author$project$Model$clearHistory,
-					$author$project$Model$trace('Program saved (and history cleared)')));
+					$author$project$Model$trace('Program saved (and history cleared).')));
 		case 'Change':
 			var newProgram = msg.a;
 			return $author$project$Model$changeProgram(newProgram);
@@ -8554,6 +8554,12 @@ var $author$project$View$console = function (m) {
 			]));
 };
 var $author$project$Update$Save = {$: 'Save'};
+var $elm$html$Html$Attributes$autocomplete = function (bool) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'autocomplete',
+		bool ? 'on' : 'off');
+};
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -8582,6 +8588,7 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$Attributes$spellcheck = $elm$html$Html$Attributes$boolProperty('spellcheck');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$View$editorWindow = function (m) {
@@ -8599,6 +8606,8 @@ var $author$project$View$editorWindow = function (m) {
 					[
 						$elm$html$Html$Attributes$id('editor'),
 						$elm$html$Html$Attributes$placeholder('Write your program here...'),
+						$elm$html$Html$Attributes$spellcheck(false),
+						$elm$html$Html$Attributes$autocomplete(false),
 						$elm$html$Html$Attributes$value(m.config.program),
 						$elm$html$Html$Attributes$disabled(m.going),
 						$elm$html$Html$Events$onInput($author$project$Update$Change)

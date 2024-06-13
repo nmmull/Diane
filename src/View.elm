@@ -2,7 +2,7 @@ module View exposing (..)
 
 import Html exposing (Html, text, button, textarea, div)
 import Html.Events exposing (onClick, onInput, onMouseDown, preventDefaultOn)
-import Html.Attributes exposing (id, value, placeholder, disabled, style)
+import Html.Attributes exposing (id, value, placeholder, disabled, style, spellcheck, autocomplete)
 import Dict
 import Diane exposing (..)
 import Model exposing (..)
@@ -14,6 +14,8 @@ editorWindow m =
         [ textarea
             [ id "editor"
             , placeholder "Write your program here..."
+            , spellcheck False
+            , autocomplete False
             , value m.config.program
             , disabled (m.going)
             , onInput Change
