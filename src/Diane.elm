@@ -121,6 +121,11 @@ type alias Config =
 
 -- EVALUATION
 
+indent : Int -> String -> String
+indent k s =
+    let ls = List.map (\x -> (String.repeat k " ") ++ x) (String.lines s) in
+    String.join "\n" ls
+
 evalCommand : Command -> Config -> Result Error ( Config, Maybe String )
 evalCommand com ({stack, program, env} as config) =
   let mkr s e p = Ok ( { config | stack = s, env = e, program = p }, Nothing ) in
@@ -162,13 +167,13 @@ evalCommand com ({stack, program, env} as config) =
       let
         while =
           p1
-          ++ " ? { "
-          ++ p2
-          ++ " while { "
-          ++ p1
-          ++ " } do { "
-          ++ p2
-          ++ " } } else { }"
+          ++ " ? {\n"
+          ++ indent 1 p2
+          ++ "\n while {\n"
+          ++ indent 2 p1
+          ++ "\n } do {\n"
+          ++ indent 2 p2
+          ++ "\n }\n} else { }"
       in
       mkProg s while
     ( Fun name body, s ) ->

@@ -4373,6 +4373,43 @@ function _Browser_load(url)
 
 
 
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
+
+
+
 
 // STRINGS
 
@@ -6032,6 +6069,33 @@ var $author$project$Diane$UnknownVariable = function (a) {
 };
 var $author$project$Diane$assign = $elm$core$Dict$insert;
 var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$String$lines = _String_lines;
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $author$project$Diane$indent = F2(
+	function (k, s) {
+		var ls = A2(
+			$elm$core$List$map,
+			function (x) {
+				return _Utils_ap(
+					A2($elm$core$String$repeat, k, ' '),
+					x);
+			},
+			$elm$core$String$lines(s));
+		return A2($elm$core$String$join, '\n', ls);
+	});
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -6828,7 +6892,7 @@ var $author$project$Diane$evalCommand = F2(
 					var p1 = _v72.a;
 					var p2 = _v72.b;
 					var s = _v0.b;
-					var _while = p1 + (' ? { ' + (p2 + (' while { ' + (p1 + (' } do { ' + (p2 + ' } } else { }'))))));
+					var _while = p1 + (' ? {\n' + (A2($author$project$Diane$indent, 1, p2) + ('\n while {\n' + (A2($author$project$Diane$indent, 2, p1) + ('\n } do {\n' + (A2($author$project$Diane$indent, 2, p2) + '\n }\n} else { }'))))));
 					return A2(mkProg, s, _while);
 				case 'Fun':
 					var _v73 = _v0.a;
@@ -7395,7 +7459,6 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
-var $elm$core$String$lines = _String_lines;
 var $elm$core$String$any = _String_any;
 var $elm$core$List$member = F2(
 	function (x, xs) {
