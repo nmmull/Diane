@@ -1,6 +1,6 @@
 module View exposing (..)
 
-import Html exposing (Html, text, button, textarea, div)
+import Html exposing (Html, text, button, textarea, div, pre)
 import Html.Events exposing (onClick, onInput, onMouseDown, preventDefaultOn)
 import Html.Attributes exposing (id, value, placeholder, disabled, style, spellcheck, autocomplete)
 import Dict
@@ -87,15 +87,27 @@ console m =
             [ text "clear" ]
         ]
 
+funHtml : String -> Prog -> Html Msg
+funHtml name body =
+    div
+        [ id "function" ]
+        [ div [ id "function-placeholder" ] [ text (name ++  " ↦ <function>") ]
+        , pre [ id "function-body" ] [ text body ]
+        ]
+
+intHtml : String -> Int -> Html Msg
+intHtml name val =
+    div [] [ text (name ++ " ↦ " ++ String.fromInt val) ]
+
+bindHtml : (String, Value) -> Html Msg
+bindHtml (name, val) =
+    case val of
+        Number v -> intHtml name v
+        Subroutine f -> funHtml name f
+
 envHtmls : Env -> List (Html Msg)
 envHtmls e =
-    let
-        go bs =
-            case bs of
-                [] -> []
-                (x, val) :: rest -> (x ++ " ↦ " ++ valString val) :: go rest
-    in
-    List.map (\s -> div [] [ text s ]) (go (Dict.toList e))
+    List.map bindHtml (Dict.toList e)
 
 viz : Model -> Html Msg
 viz m =

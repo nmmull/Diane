@@ -8717,42 +8717,66 @@ var $author$project$Update$shortcuts = function () {
 	};
 	return A2($elm$json$Json$Decode$andThen, go, $elm$html$Html$Events$keyCode);
 }();
-var $author$project$Diane$valString = function (v) {
-	if (v.$ === 'Number') {
-		var n = v.a;
-		return $elm$core$String$fromInt(n);
+var $elm$html$Html$pre = _VirtualDom_node('pre');
+var $author$project$View$funHtml = F2(
+	function (name, body) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$id('function')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$id('function-placeholder')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(name + ' ↦ <function>')
+						])),
+					A2(
+					$elm$html$Html$pre,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$id('function-body')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(body)
+						]))
+				]));
+	});
+var $author$project$View$intHtml = F2(
+	function (name, val) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					name + (' ↦ ' + $elm$core$String$fromInt(val)))
+				]));
+	});
+var $author$project$View$bindHtml = function (_v0) {
+	var name = _v0.a;
+	var val = _v0.b;
+	if (val.$ === 'Number') {
+		var v = val.a;
+		return A2($author$project$View$intHtml, name, v);
 	} else {
-		return '<function>';
+		var f = val.a;
+		return A2($author$project$View$funHtml, name, f);
 	}
 };
 var $author$project$View$envHtmls = function (e) {
-	var go = function (bs) {
-		if (!bs.b) {
-			return _List_Nil;
-		} else {
-			var _v1 = bs.a;
-			var x = _v1.a;
-			var val = _v1.b;
-			var rest = bs.b;
-			return A2(
-				$elm$core$List$cons,
-				x + (' ↦ ' + $author$project$Diane$valString(val)),
-				go(rest));
-		}
-	};
 	return A2(
 		$elm$core$List$map,
-		function (s) {
-			return A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(s)
-					]));
-		},
-		go(
-			$elm$core$Dict$toList(e)));
+		$author$project$View$bindHtml,
+		$elm$core$Dict$toList(e));
 };
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$li = _VirtualDom_node('li');

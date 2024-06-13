@@ -85,6 +85,31 @@ button {
     padding: 10px;
 }
 
+#function-body {
+		z-index: 1;
+		position: absolute;
+		top: 0;
+		right: 20px;
+		padding: 5px;
+		background-color: whitesmoke;
+		border-style: solid;
+		border-color: black;
+		border-width: 1px;
+}
+
+
+#function #function-body {
+		display: none;
+}
+
+#function:hover {
+		background-color: whitesmoke;
+}
+
+#function:hover #function-body {
+		display: block;
+}
+
 #clear-data {
     position: absolute;
     top: 5px; right: 5px;
