@@ -5897,17 +5897,89 @@ var $author$project$Model$start = function (m) {
 var $author$project$Diane$done = function (c) {
 	return $elm$core$String$isEmpty(c.program);
 };
+var $author$project$Diane$commandString = function (c) {
+	switch (c.$) {
+		case 'Push':
+			var i = c.a;
+			return '(push) ' + $elm$core$String$fromInt(i);
+		case 'Trace':
+			return 'print';
+		case 'Drop':
+			return 'drop';
+		case 'Swap':
+			return 'swap';
+		case 'Dup':
+			return 'dup';
+		case 'Over':
+			return 'over';
+		case 'Rot':
+			return 'rot';
+		case 'Drop2':
+			return 'drop2';
+		case 'Swap2':
+			return 'swap2';
+		case 'Nip':
+			return 'nip';
+		case 'Tuck':
+			return 'tuck';
+		case 'Add':
+			return '+';
+		case 'Sub':
+			return '-';
+		case 'Mul':
+			return '*';
+		case 'Div':
+			return '/';
+		case 'Mod':
+			return '%';
+		case 'Eq':
+			return '=';
+		case 'Neq':
+			return '<>';
+		case 'Lt':
+			return '<';
+		case 'Lte':
+			return '<=';
+		case 'Gt':
+			return '>';
+		case 'Gte':
+			return '>=';
+		case 'If':
+			return '? {_} else {_}';
+		case 'While':
+			return 'while {_} do {_}';
+		case 'Fun':
+			var name = c.a;
+			return 'def ' + (name + ' {_}');
+		case 'Call':
+			var name = c.a;
+			return '#' + name;
+		case 'Lookup':
+			var name = c.a;
+			return '(lookup) ' + name;
+		case 'Assign':
+			var name = c.a;
+			return '@' + name;
+		default:
+			var name = c.a;
+			return '!' + name;
+	}
+};
 var $author$project$Diane$errMsg = function (e) {
 	var m = function () {
 		switch (e.$) {
 			case 'StackUnderflow':
-				return 'Stack underflow';
+				var com = e.a;
+				return 'Stack underflow on \'' + ($author$project$Diane$commandString(com) + '\'');
 			case 'UnknownVariable':
-				return 'Unknown variable';
+				var ident = e.a;
+				return 'Unknown variable \'' + (ident + '\'');
 			case 'InvalidCall':
-				return 'Invalid call';
+				var ident = e.a;
+				return 'Invalid call, \'' + (ident + '\' is not a subroutine');
 			case 'InvalidLookup':
-				return 'Invalid lookup';
+				var ident = e.a;
+				return 'Invalid lookup, \'' + (ident + '\' is not an integer');
 			default:
 				return 'Division by 0';
 		}
@@ -5915,16 +5987,24 @@ var $author$project$Diane$errMsg = function (e) {
 	return $author$project$Diane$mkErrMsg(m);
 };
 var $author$project$Diane$DivByZero = {$: 'DivByZero'};
-var $author$project$Diane$InvalidCall = {$: 'InvalidCall'};
-var $author$project$Diane$InvalidLookup = {$: 'InvalidLookup'};
+var $author$project$Diane$InvalidCall = function (a) {
+	return {$: 'InvalidCall', a: a};
+};
+var $author$project$Diane$InvalidLookup = function (a) {
+	return {$: 'InvalidLookup', a: a};
+};
 var $author$project$Diane$Number = function (a) {
 	return {$: 'Number', a: a};
 };
-var $author$project$Diane$StackUnderflow = {$: 'StackUnderflow'};
+var $author$project$Diane$StackUnderflow = function (a) {
+	return {$: 'StackUnderflow', a: a};
+};
 var $author$project$Diane$Subroutine = function (a) {
 	return {$: 'Subroutine', a: a};
 };
-var $author$project$Diane$UnknownVariable = {$: 'UnknownVariable'};
+var $author$project$Diane$UnknownVariable = function (a) {
+	return {$: 'UnknownVariable', a: a};
+};
 var $author$project$Diane$assign = $elm$core$Dict$insert;
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Dict$get = F2(
@@ -6743,13 +6823,15 @@ var $author$project$Diane$evalCommand = F2(
 					var s = _v0.b;
 					var _v74 = A2($author$project$Diane$lookup, id, config.env);
 					if (_v74.$ === 'Nothing') {
-						return $elm$core$Result$Err($author$project$Diane$UnknownVariable);
+						return $elm$core$Result$Err(
+							$author$project$Diane$UnknownVariable(id));
 					} else {
 						if (_v74.a.$ === 'Subroutine') {
 							var body = _v74.a.a;
 							return A2(mkProg, s, body);
 						} else {
-							return $elm$core$Result$Err($author$project$Diane$InvalidCall);
+							return $elm$core$Result$Err(
+								$author$project$Diane$InvalidCall(id));
 						}
 					}
 				case 'Lookup':
@@ -6757,14 +6839,16 @@ var $author$project$Diane$evalCommand = F2(
 					var s = _v0.b;
 					var _v75 = A2($author$project$Diane$lookup, id, config.env);
 					if (_v75.$ === 'Nothing') {
-						return $elm$core$Result$Err($author$project$Diane$UnknownVariable);
+						return $elm$core$Result$Err(
+							$author$project$Diane$UnknownVariable(id));
 					} else {
 						if (_v75.a.$ === 'Number') {
 							var n = _v75.a.a;
 							return mk(
 								A2($elm$core$List$cons, n, s));
 						} else {
-							return $elm$core$Result$Err($author$project$Diane$InvalidLookup);
+							return $elm$core$Result$Err(
+								$author$project$Diane$InvalidLookup(id));
 						}
 					}
 				case 'Assign':
@@ -6787,13 +6871,20 @@ var $author$project$Diane$evalCommand = F2(
 				default:
 					var id = _v0.a.a;
 					var s = _v0.b;
-					return A2(
-						mkEnv,
-						s,
-						A2($author$project$Diane$unassign, id, env));
+					var _v77 = A2($author$project$Diane$lookup, id, config.env);
+					if (_v77.$ === 'Nothing') {
+						return $elm$core$Result$Err(
+							$author$project$Diane$UnknownVariable(id));
+					} else {
+						return A2(
+							mkEnv,
+							s,
+							A2($author$project$Diane$unassign, id, env));
+					}
 			}
 		}
-		return $elm$core$Result$Err($author$project$Diane$StackUnderflow);
+		return $elm$core$Result$Err(
+			$author$project$Diane$StackUnderflow(com));
 	});
 var $author$project$Model$trace = F2(
 	function (msg, m) {
@@ -8110,7 +8201,7 @@ var $author$project$Model$eval = function () {
 					if (n <= 0) {
 						return A2(
 							$author$project$Model$trace,
-							$author$project$Diane$mkErrMsg('time out (possible infinite loop)'),
+							$author$project$Diane$mkErrMsg('time out'),
 							$author$project$Model$stop(m));
 					} else {
 						return m;

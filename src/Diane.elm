@@ -23,13 +23,46 @@ type Command
   | Fun Ident Prog | Call Ident
   | Lookup Ident | Assign Ident | Unassign Ident
 
+commandString : Command -> String
+commandString c =
+    case c of
+        Push i -> "(push) " ++ String.fromInt i
+        Trace -> "print"
+        Drop -> "drop"
+        Swap -> "swap"
+        Dup -> "dup"
+        Over -> "over"
+        Rot -> "rot"
+        Drop2 -> "drop2"
+        Swap2 -> "swap2"
+        Nip -> "nip"
+        Tuck -> "tuck"
+        Add -> "+"
+        Sub -> "-"
+        Mul -> "*"
+        Div -> "/"
+        Mod -> "%"
+        Eq -> "="
+        Neq -> "<>"
+        Lt -> "<"
+        Lte -> "<="
+        Gt -> ">"
+        Gte -> ">="
+        If _ _ -> "? {_} else {_}"
+        While _ _ -> "while {_} do {_}"
+        Fun name _ -> "def " ++ name ++ " {_}"
+        Call name -> "#" ++ name
+        Lookup name -> "(lookup) " ++ name
+        Assign name -> "@" ++ name
+        Unassign name -> "!" ++ name
+
 -- ERRORS
 
 type Error
-  = StackUnderflow
-  | UnknownVariable
-  | InvalidCall
-  | InvalidLookup
+  = StackUnderflow Command
+  | UnknownVariable Ident
+  | InvalidCall Ident
+  | InvalidLookup Ident
   | DivByZero
 
 mkErrMsg : String -> String
@@ -40,10 +73,10 @@ errMsg e =
   let
     m =
       case e of
-        StackUnderflow -> "Stack underflow"
-        UnknownVariable -> "Unknown variable"
-        InvalidCall -> "Invalid call"
-        InvalidLookup -> "Invalid lookup"
+        StackUnderflow com -> "Stack underflow on '" ++ commandString com ++ "'"
+        UnknownVariable ident -> "Unknown variable '" ++ ident ++ "'"
+        InvalidCall ident -> "Invalid call, '" ++ ident ++ "' is not a subroutine"
+        InvalidLookup ident -> "Invalid lookup, '" ++ ident ++ "' is not an integer"
         DivByZero -> "Division by 0"
   in mkErrMsg m
 
@@ -142,19 +175,21 @@ evalCommand com ({stack, program, env} as config) =
       mkEnv s (assign name (Subroutine body) env)
     ( Call id, s ) ->
       case lookup id config.env of
-        Nothing -> Err UnknownVariable
-        Just (Subroutine body) -> mkProg s body
-        Just _ -> Err InvalidCall
+          Nothing -> Err (UnknownVariable id)
+          Just (Subroutine body) -> mkProg s body
+          Just _ -> Err (InvalidCall id)
     ( Lookup id, s ) ->
       case lookup id config.env of
-        Nothing -> Err UnknownVariable
-        Just (Number n) -> mk (n :: s)
-        Just _ -> Err InvalidLookup
+          Nothing -> Err (UnknownVariable id)
+          Just (Number n) -> mk (n :: s)
+          Just _ -> Err (InvalidLookup id)
     ( Assign id, x :: s ) ->
       mkEnv s (assign id (Number x) env)
     ( Unassign id, s ) ->
-      mkEnv s (unassign id env)
-    _ -> Err StackUnderflow
+      case lookup id config.env of
+            Nothing -> Err (UnknownVariable id)
+            _ -> mkEnv s (unassign id env)
+    _ -> Err (StackUnderflow com)
 
 done : Config -> Bool
 done c = String.isEmpty c.program
