@@ -5895,7 +5895,7 @@ var $author$project$Diane$done = function (c) {
 	return $elm$core$String$isEmpty(c.program);
 };
 var $author$project$Diane$mkErrMsg = function (s) {
-	return 'ERROR: ' + s;
+	return 'ERROR: ' + (s + '.');
 };
 var $author$project$Diane$errMsg = function (e) {
 	var m = function () {
@@ -5906,12 +5906,15 @@ var $author$project$Diane$errMsg = function (e) {
 				return 'Unknown variable';
 			case 'InvalidCall':
 				return 'Invalid call';
-			default:
+			case 'InvalidLookup':
 				return 'Invalid lookup';
+			default:
+				return 'Division by 0';
 		}
 	}();
 	return $author$project$Diane$mkErrMsg(m);
 };
+var $author$project$Diane$DivByZero = {$: 'DivByZero'};
 var $author$project$Diane$InvalidCall = {$: 'InvalidCall'};
 var $author$project$Diane$InvalidLookup = {$: 'InvalidLookup'};
 var $author$project$Diane$Number = function (a) {
@@ -6360,7 +6363,7 @@ var $author$project$Diane$evalCommand = F2(
 				return A3(mkr, s, e, program);
 			});
 		var _v0 = _Utils_Tuple2(com, stack);
-		_v0$29:
+		_v0$31:
 		while (true) {
 			switch (_v0.a.$) {
 				case 'Push':
@@ -6375,7 +6378,7 @@ var $author$project$Diane$evalCommand = F2(
 						var s = _v2.b;
 						return mk(s);
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Swap':
 					if (_v0.b.b && _v0.b.b.b) {
@@ -6391,7 +6394,7 @@ var $author$project$Diane$evalCommand = F2(
 								y,
 								A2($elm$core$List$cons, x, s)));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Dup':
 					if (_v0.b.b) {
@@ -6405,7 +6408,7 @@ var $author$project$Diane$evalCommand = F2(
 								x,
 								A2($elm$core$List$cons, x, s)));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Over':
 					if (_v0.b.b && _v0.b.b.b) {
@@ -6424,7 +6427,7 @@ var $author$project$Diane$evalCommand = F2(
 									x,
 									A2($elm$core$List$cons, y, s))));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Rot':
 					if ((_v0.b.b && _v0.b.b.b) && _v0.b.b.b.b) {
@@ -6445,7 +6448,7 @@ var $author$project$Diane$evalCommand = F2(
 									x,
 									A2($elm$core$List$cons, y, s))));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Drop2':
 					if (_v0.b.b && _v0.b.b.b) {
@@ -6457,7 +6460,7 @@ var $author$project$Diane$evalCommand = F2(
 						var s = _v17.b;
 						return mk(s);
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Swap2':
 					if (((_v0.b.b && _v0.b.b.b) && _v0.b.b.b.b) && _v0.b.b.b.b.b) {
@@ -6483,7 +6486,7 @@ var $author$project$Diane$evalCommand = F2(
 										x,
 										A2($elm$core$List$cons, y, s)))));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Nip':
 					if (_v0.b.b && _v0.b.b.b) {
@@ -6496,7 +6499,7 @@ var $author$project$Diane$evalCommand = F2(
 						return mk(
 							A2($elm$core$List$cons, x, s));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Tuck':
 					if (_v0.b.b && _v0.b.b.b) {
@@ -6515,7 +6518,7 @@ var $author$project$Diane$evalCommand = F2(
 									y,
 									A2($elm$core$List$cons, x, s))));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Trace':
 					if (_v0.b.b) {
@@ -6528,7 +6531,7 @@ var $author$project$Diane$evalCommand = F2(
 							s,
 							$elm$core$String$fromInt(x));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Add':
 					if (_v0.b.b && _v0.b.b.b) {
@@ -6541,7 +6544,7 @@ var $author$project$Diane$evalCommand = F2(
 						return mk(
 							A2($elm$core$List$cons, x + y, s));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Sub':
 					if (_v0.b.b && _v0.b.b.b) {
@@ -6554,7 +6557,7 @@ var $author$project$Diane$evalCommand = F2(
 						return mk(
 							A2($elm$core$List$cons, x - y, s));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Mul':
 					if (_v0.b.b && _v0.b.b.b) {
@@ -6567,65 +6570,53 @@ var $author$project$Diane$evalCommand = F2(
 						return mk(
 							A2($elm$core$List$cons, x * y, s));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Div':
 					if (_v0.b.b && _v0.b.b.b) {
-						var _v40 = _v0.a;
-						var _v41 = _v0.b;
-						var x = _v41.a;
-						var _v42 = _v41.b;
-						var y = _v42.a;
-						var s = _v42.b;
-						return mk(
-							A2($elm$core$List$cons, (x / y) | 0, s));
+						if (!_v0.b.b.a) {
+							var _v40 = _v0.a;
+							var _v41 = _v0.b;
+							var x = _v41.a;
+							var _v42 = _v41.b;
+							var s = _v42.b;
+							return $elm$core$Result$Err($author$project$Diane$DivByZero);
+						} else {
+							var _v43 = _v0.a;
+							var _v44 = _v0.b;
+							var x = _v44.a;
+							var _v45 = _v44.b;
+							var y = _v45.a;
+							var s = _v45.b;
+							return mk(
+								A2($elm$core$List$cons, (x / y) | 0, s));
+						}
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Mod':
 					if (_v0.b.b && _v0.b.b.b) {
-						var _v43 = _v0.a;
-						var _v44 = _v0.b;
-						var x = _v44.a;
-						var _v45 = _v44.b;
-						var y = _v45.a;
-						var s = _v45.b;
-						return mk(
-							A2($elm$core$List$cons, x % y, s));
+						if (!_v0.b.b.a) {
+							var _v46 = _v0.a;
+							var _v47 = _v0.b;
+							var x = _v47.a;
+							var _v48 = _v47.b;
+							var s = _v48.b;
+							return $elm$core$Result$Err($author$project$Diane$DivByZero);
+						} else {
+							var _v49 = _v0.a;
+							var _v50 = _v0.b;
+							var x = _v50.a;
+							var _v51 = _v50.b;
+							var y = _v51.a;
+							var s = _v51.b;
+							return mk(
+								A2($elm$core$List$cons, x % y, s));
+						}
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'Eq':
-					if (_v0.b.b && _v0.b.b.b) {
-						var _v46 = _v0.a;
-						var _v47 = _v0.b;
-						var x = _v47.a;
-						var _v48 = _v47.b;
-						var y = _v48.a;
-						var s = _v48.b;
-						return A2(
-							mkBool,
-							_Utils_eq(x, y),
-							s);
-					} else {
-						break _v0$29;
-					}
-				case 'Neq':
-					if (_v0.b.b && _v0.b.b.b) {
-						var _v49 = _v0.a;
-						var _v50 = _v0.b;
-						var x = _v50.a;
-						var _v51 = _v50.b;
-						var y = _v51.a;
-						var s = _v51.b;
-						return A2(
-							mkBool,
-							!_Utils_eq(x, y),
-							s);
-					} else {
-						break _v0$29;
-					}
-				case 'Lt':
 					if (_v0.b.b && _v0.b.b.b) {
 						var _v52 = _v0.a;
 						var _v53 = _v0.b;
@@ -6635,12 +6626,12 @@ var $author$project$Diane$evalCommand = F2(
 						var s = _v54.b;
 						return A2(
 							mkBool,
-							_Utils_cmp(x, y) < 0,
+							_Utils_eq(x, y),
 							s);
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
-				case 'Lte':
+				case 'Neq':
 					if (_v0.b.b && _v0.b.b.b) {
 						var _v55 = _v0.a;
 						var _v56 = _v0.b;
@@ -6650,12 +6641,12 @@ var $author$project$Diane$evalCommand = F2(
 						var s = _v57.b;
 						return A2(
 							mkBool,
-							_Utils_cmp(x, y) < 1,
+							!_Utils_eq(x, y),
 							s);
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
-				case 'Gt':
+				case 'Lt':
 					if (_v0.b.b && _v0.b.b.b) {
 						var _v58 = _v0.a;
 						var _v59 = _v0.b;
@@ -6665,12 +6656,12 @@ var $author$project$Diane$evalCommand = F2(
 						var s = _v60.b;
 						return A2(
 							mkBool,
-							_Utils_cmp(x, y) > 0,
+							_Utils_cmp(x, y) < 0,
 							s);
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
-				case 'Gte':
+				case 'Lte':
 					if (_v0.b.b && _v0.b.b.b) {
 						var _v61 = _v0.a;
 						var _v62 = _v0.b;
@@ -6680,34 +6671,64 @@ var $author$project$Diane$evalCommand = F2(
 						var s = _v63.b;
 						return A2(
 							mkBool,
+							_Utils_cmp(x, y) < 1,
+							s);
+					} else {
+						break _v0$31;
+					}
+				case 'Gt':
+					if (_v0.b.b && _v0.b.b.b) {
+						var _v64 = _v0.a;
+						var _v65 = _v0.b;
+						var x = _v65.a;
+						var _v66 = _v65.b;
+						var y = _v66.a;
+						var s = _v66.b;
+						return A2(
+							mkBool,
+							_Utils_cmp(x, y) > 0,
+							s);
+					} else {
+						break _v0$31;
+					}
+				case 'Gte':
+					if (_v0.b.b && _v0.b.b.b) {
+						var _v67 = _v0.a;
+						var _v68 = _v0.b;
+						var x = _v68.a;
+						var _v69 = _v68.b;
+						var y = _v69.a;
+						var s = _v69.b;
+						return A2(
+							mkBool,
 							_Utils_cmp(x, y) > -1,
 							s);
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'If':
 					if (_v0.b.b) {
-						var _v64 = _v0.a;
-						var p1 = _v64.a;
-						var p2 = _v64.b;
-						var _v65 = _v0.b;
-						var x = _v65.a;
-						var s = _v65.b;
+						var _v70 = _v0.a;
+						var p1 = _v70.a;
+						var p2 = _v70.b;
+						var _v71 = _v0.b;
+						var x = _v71.a;
+						var s = _v71.b;
 						return (!x) ? A2(mkProg, s, p2) : A2(mkProg, s, p1);
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				case 'While':
-					var _v66 = _v0.a;
-					var p1 = _v66.a;
-					var p2 = _v66.b;
+					var _v72 = _v0.a;
+					var p1 = _v72.a;
+					var p2 = _v72.b;
 					var s = _v0.b;
 					var _while = p1 + (' ? { ' + (p2 + (' while { ' + (p1 + (' } do { ' + (p2 + ' } } else { }'))))));
 					return A2(mkProg, s, _while);
 				case 'Fun':
-					var _v67 = _v0.a;
-					var name = _v67.a;
-					var body = _v67.b;
+					var _v73 = _v0.a;
+					var name = _v73.a;
+					var body = _v73.b;
 					var s = _v0.b;
 					return A2(
 						mkEnv,
@@ -6720,12 +6741,12 @@ var $author$project$Diane$evalCommand = F2(
 				case 'Call':
 					var id = _v0.a.a;
 					var s = _v0.b;
-					var _v68 = A2($author$project$Diane$lookup, id, config.env);
-					if (_v68.$ === 'Nothing') {
+					var _v74 = A2($author$project$Diane$lookup, id, config.env);
+					if (_v74.$ === 'Nothing') {
 						return $elm$core$Result$Err($author$project$Diane$UnknownVariable);
 					} else {
-						if (_v68.a.$ === 'Subroutine') {
-							var body = _v68.a.a;
+						if (_v74.a.$ === 'Subroutine') {
+							var body = _v74.a.a;
 							return A2(mkProg, s, body);
 						} else {
 							return $elm$core$Result$Err($author$project$Diane$InvalidCall);
@@ -6734,12 +6755,12 @@ var $author$project$Diane$evalCommand = F2(
 				case 'Lookup':
 					var id = _v0.a.a;
 					var s = _v0.b;
-					var _v69 = A2($author$project$Diane$lookup, id, config.env);
-					if (_v69.$ === 'Nothing') {
+					var _v75 = A2($author$project$Diane$lookup, id, config.env);
+					if (_v75.$ === 'Nothing') {
 						return $elm$core$Result$Err($author$project$Diane$UnknownVariable);
 					} else {
-						if (_v69.a.$ === 'Number') {
-							var n = _v69.a.a;
+						if (_v75.a.$ === 'Number') {
+							var n = _v75.a.a;
 							return mk(
 								A2($elm$core$List$cons, n, s));
 						} else {
@@ -6749,9 +6770,9 @@ var $author$project$Diane$evalCommand = F2(
 				case 'Assign':
 					if (_v0.b.b) {
 						var id = _v0.a.a;
-						var _v70 = _v0.b;
-						var x = _v70.a;
-						var s = _v70.b;
+						var _v76 = _v0.b;
+						var x = _v76.a;
+						var s = _v76.b;
 						return A2(
 							mkEnv,
 							s,
@@ -6761,7 +6782,7 @@ var $author$project$Diane$evalCommand = F2(
 								$author$project$Diane$Number(x),
 								env));
 					} else {
-						break _v0$29;
+						break _v0$31;
 					}
 				default:
 					var id = _v0.a.a;
@@ -8592,7 +8613,6 @@ var $author$project$Update$shortcuts = function () {
 	};
 	return A2($elm$json$Json$Decode$andThen, go, $elm$html$Html$Events$keyCode);
 }();
-var $author$project$Update$ClearData = {$: 'ClearData'};
 var $author$project$Diane$valString = function (v) {
 	if (v.$ === 'Number') {
 		var n = v.a;
@@ -8631,13 +8651,6 @@ var $author$project$View$envHtmls = function (e) {
 			$elm$core$Dict$toList(e)));
 };
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
-var $elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === 'RBEmpty_elm_builtin') {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $author$project$Diane$stackStr = function (s) {
 	if (!s.b) {
@@ -8715,19 +8728,6 @@ var $author$project$View$viz = function (m) {
 										[x]));
 							},
 							$author$project$View$envHtmls(m.config.env)))
-					])),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$id('clear-data'),
-						$elm$html$Html$Attributes$disabled(
-						$elm$core$List$isEmpty(m.config.stack) && $elm$core$Dict$isEmpty(m.config.env)),
-						$elm$html$Html$Events$onClick($author$project$Update$ClearData)
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('clear')
 					]))
 			]));
 };

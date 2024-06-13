@@ -30,9 +30,10 @@ type Error
   | UnknownVariable
   | InvalidCall
   | InvalidLookup
+  | DivByZero
 
 mkErrMsg : String -> String
-mkErrMsg s = "ERROR: " ++ s
+mkErrMsg s = "ERROR: " ++ s ++ "."
 
 errMsg : Error -> String
 errMsg e =
@@ -43,6 +44,7 @@ errMsg e =
         UnknownVariable -> "Unknown variable"
         InvalidCall -> "Invalid call"
         InvalidLookup -> "Invalid lookup"
+        DivByZero -> "Division by 0"
   in mkErrMsg m
 
 -- VALUES
@@ -109,7 +111,9 @@ evalCommand com ({stack, program, env} as config) =
     ( Add, x :: y :: s ) -> mk (x + y :: s)
     ( Sub, x :: y :: s ) -> mk (x - y :: s)
     ( Mul, x :: y :: s ) -> mk (x * y :: s)
+    ( Div, x :: 0 :: s ) -> Err DivByZero
     ( Div, x :: y :: s ) -> mk (x // y :: s)
+    ( Mod, x :: 0 :: s ) -> Err DivByZero
     ( Mod, x :: y :: s ) -> mk (remainderBy y x :: s)
     ( Eq, x :: y :: s ) -> mkBool (x == y) s
     ( Neq, x :: y :: s ) -> mkBool (x /= y) s

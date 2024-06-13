@@ -109,12 +109,12 @@ viz m =
             , Html.h3 [] [ text "Environment" ]
             , Html.ul [] (List.map (\x -> Html.li [] [ x ]) (envHtmls m.config.env))
             ]
-        , button
-            [ id "clear-data"
-            , disabled (List.isEmpty m.config.stack && Dict.isEmpty m.config.env)
-            , onClick ClearData
-            ]
-            [ text "clear" ]
+        -- , button
+        --     [ id "clear-data"
+        --     , disabled (List.isEmpty m.config.stack && Dict.isEmpty m.config.env)
+        --     , onClick ClearData
+        --     ]
+        --     [ text "clear" ]
         ]
 
 vsplit : Model -> Html Msg
