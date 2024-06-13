@@ -57,7 +57,7 @@ the playground itself, so I've included them here.
 + The *run* button consumes as much of the program as possible until
   + the entire program is consumed
   + there is an error
-  + the evaluation has taken 10,000 steps (an arbitrary cut-off).
+  + the evaluation times out.
 + The *undo* button reverses a step taking by pressing either the
   *step* button or the *run*.
 + The *reset* button resets the program state to its initial state,

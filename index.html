@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2024-06-12 Wed 20:18 -->
+<!-- 2024-06-12 Wed 22:54 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Diane (UNDER CONSTRUCTION)</title>
@@ -19,20 +19,20 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orgbc7269e">The Playground</a>
+<li><a href="#orgefd4e24">The Playground</a>
 <ul>
-<li><a href="#org645f029">Instructions</a></li>
-<li><a href="#orge6da5fc">Keyboard Shortcuts</a></li>
+<li><a href="#org9aa3bd8">Instructions</a></li>
+<li><a href="#org66e544a">Keyboard Shortcuts</a></li>
 </ul>
 </li>
-<li><a href="#org6925d82">Syntax</a></li>
-<li><a href="#org58d8c1c">Semantics</a>
+<li><a href="#org0f94409">Syntax</a></li>
+<li><a href="#orgb97c9e6">Semantics</a>
 <ul>
-<li><a href="#org157a347">Stack Manipulation</a></li>
-<li><a href="#orgeac5d31">Arithmetic and Comparisons</a></li>
-<li><a href="#org60cf811">Subroutines</a></li>
-<li><a href="#org018fb0f">Variables</a></li>
-<li><a href="#org3f102d9">Conditionals</a></li>
+<li><a href="#org0757ce5">Stack Manipulation</a></li>
+<li><a href="#org5c96fce">Arithmetic and Comparisons</a></li>
+<li><a href="#org217ca1a">Subroutines</a></li>
+<li><a href="#orga8c7dfa">Variables</a></li>
+<li><a href="#orgd331fb3">Conditionals</a></li>
 </ul>
 </li>
 </ul>
@@ -60,9 +60,9 @@ lines as the <a href="https://pythontutor.com/cp/composingprograms.html#mode=edi
 the language and playground.
 </p>
 
-<div id="outline-container-orgbc7269e" class="outline-2">
-<h2 id="orgbc7269e">The Playground</h2>
-<div class="outline-text-2" id="text-orgbc7269e">
+<div id="outline-container-orgefd4e24" class="outline-2">
+<h2 id="orgefd4e24">The Playground</h2>
+<div class="outline-text-2" id="text-orgefd4e24">
 <p>
 The primary goal of this project was to build a <a href="playground.html">playground</a> for toying
 with Diane programs.  It consists of an editor window for writing
@@ -101,9 +101,9 @@ interfaces, there are no instructions for using the playground within
 the playground itself, so I've included them here.
 </p>
 </div>
-<div id="outline-container-org645f029" class="outline-3">
-<h3 id="org645f029">Instructions</h3>
-<div class="outline-text-3" id="text-org645f029">
+<div id="outline-container-org9aa3bd8" class="outline-3">
+<h3 id="org9aa3bd8">Instructions</h3>
+<div class="outline-text-3" id="text-org9aa3bd8">
 <ul class="org-ul">
 <li>The <b>step</b> button consumes a single command of the program in the
 editor window and updates the stack and environment accordingly.</li>
@@ -111,7 +111,7 @@ editor window and updates the stack and environment accordingly.</li>
 <ul class="org-ul">
 <li>the entire program is consumed</li>
 <li>there is an error</li>
-<li>the evaluation has taken 10,000 steps (an arbitrary cut-off).</li>
+<li>the evaluation times out.</li>
 </ul></li>
 <li>The <b>undo</b> button reverses a step taking by pressing either the
 <b>step</b> button or the <b>run</b>.</li>
@@ -126,9 +126,9 @@ there.<sup><a id="fnr.2" class="footref" href="#fn.2" role="doc-backlink">2</a><
 </div>
 </div>
 
-<div id="outline-container-orge6da5fc" class="outline-3">
-<h3 id="orge6da5fc">Keyboard Shortcuts</h3>
-<div class="outline-text-3" id="text-orge6da5fc">
+<div id="outline-container-org66e544a" class="outline-3">
+<h3 id="org66e544a">Keyboard Shortcuts</h3>
+<div class="outline-text-3" id="text-org66e544a">
 <p>
 It is possible to step through a program while writing it using the
 following keyboard shortcuts.  In most cases you can also hold down
@@ -173,9 +173,9 @@ animation mechanism.
 </div>
 </div>
 
-<div id="outline-container-org6925d82" class="outline-2">
-<h2 id="org6925d82">Syntax</h2>
-<div class="outline-text-2" id="text-org6925d82">
+<div id="outline-container-org0f94409" class="outline-2">
+<h2 id="org0f94409">Syntax</h2>
+<div class="outline-text-2" id="text-org0f94409">
 <p>
 The following is a simple <a href="https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form">EBNF Grammar</a> describing a Diane program.  In
 short, a program is a sequence of commands.
@@ -199,9 +199,9 @@ short, a program is a sequence of commands.
 </div>
 </div>
 
-<div id="outline-container-org58d8c1c" class="outline-2">
-<h2 id="org58d8c1c">Semantics</h2>
-<div class="outline-text-2" id="text-org58d8c1c">
+<div id="outline-container-orgb97c9e6" class="outline-2">
+<h2 id="orgb97c9e6">Semantics</h2>
+<div class="outline-text-2" id="text-orgb97c9e6">
 <p>
 We take a <b>value</b> to be a integer (ℤ) or a program (ℙ) representing a
 subroutine.<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup> A
@@ -220,9 +220,9 @@ but with any binding of X removed.
 </p>
 </div>
 
-<div id="outline-container-org157a347" class="outline-3">
-<h3 id="org157a347">Stack Manipulation</h3>
-<div class="outline-text-3" id="text-org157a347">
+<div id="outline-container-org0757ce5" class="outline-3">
+<h3 id="org0757ce5">Stack Manipulation</h3>
+<div class="outline-text-3" id="text-org0757ce5">
 <p>
 Several commands are dedicated to manipulating values on the
 stack. We can
@@ -321,9 +321,9 @@ print print print print`
 </div>
 </div>
 
-<div id="outline-container-orgeac5d31" class="outline-3">
-<h3 id="orgeac5d31">Arithmetic and Comparisons</h3>
-<div class="outline-text-3" id="text-orgeac5d31">
+<div id="outline-container-org5c96fce" class="outline-3">
+<h3 id="org5c96fce">Arithmetic and Comparisons</h3>
+<div class="outline-text-3" id="text-org5c96fce">
 <p>
 The next set of commands are used to operate on the integers on the
 stack.  We can
@@ -462,9 +462,9 @@ program: `3 4 5 + * 4 swap / 7 < 5 /`
 </script>
 </div>
 </div>
-<div id="outline-container-org60cf811" class="outline-3">
-<h3 id="org60cf811">Subroutines</h3>
-<div class="outline-text-3" id="text-org60cf811">
+<div id="outline-container-org217ca1a" class="outline-3">
+<h3 id="org217ca1a">Subroutines</h3>
+<div class="outline-text-3" id="text-org217ca1a">
 <p>
 A subroutine is just a named program.  We can <i>define</i> subroutines and
 <i>call</i> them.  Defining a subroutine adds a binding in the environment
@@ -520,9 +520,9 @@ def DUPTWO {
 </script>
 </div>
 </div>
-<div id="outline-container-org018fb0f" class="outline-3">
-<h3 id="org018fb0f">Variables</h3>
-<div class="outline-text-3" id="text-org018fb0f">
+<div id="outline-container-orga8c7dfa" class="outline-3">
+<h3 id="orga8c7dfa">Variables</h3>
+<div class="outline-text-3" id="text-orga8c7dfa">
 <p>
 A variable is just a named integer. We can
 </p>
@@ -586,9 +586,9 @@ X Y + @Z
 </script>
 </div>
 </div>
-<div id="outline-container-org3f102d9" class="outline-3">
-<h3 id="org3f102d9">Conditionals</h3>
-<div class="outline-text-3" id="text-org3f102d9">
+<div id="outline-container-orgd331fb3" class="outline-3">
+<h3 id="orgd331fb3">Conditionals</h3>
+<div class="outline-text-3" id="text-orgd331fb3">
 <p>
 Finally, there are if-statements for conditional reasoning.  We also
 include while-loops with the usual semantics.

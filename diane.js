@@ -5886,6 +5886,9 @@ var $author$project$Model$clearTrace = function (m) {
 		m,
 		{trace: _List_Nil});
 };
+var $author$project$Diane$mkErrMsg = function (s) {
+	return 'ERROR: ' + (s + '.');
+};
 var $author$project$Model$start = function (m) {
 	return _Utils_update(
 		m,
@@ -5893,9 +5896,6 @@ var $author$project$Model$start = function (m) {
 };
 var $author$project$Diane$done = function (c) {
 	return $elm$core$String$isEmpty(c.program);
-};
-var $author$project$Diane$mkErrMsg = function (s) {
-	return 'ERROR: ' + (s + '.');
 };
 var $author$project$Diane$errMsg = function (e) {
 	var m = function () {
@@ -8096,22 +8096,35 @@ var $author$project$Model$updateHistory = function (m) {
 	return A3($author$project$Model$updateConfig, true, m.config, m);
 };
 var $author$project$Model$eval = function () {
-	var go = function (m) {
-		go:
-		while (true) {
-			if (m.going) {
-				var $temp$m = A2($author$project$Model$step, false, m);
-				m = $temp$m;
-				continue go;
-			} else {
-				return m;
+	var go = F2(
+		function (n, m) {
+			go:
+			while (true) {
+				if (m.going && (n > 0)) {
+					var $temp$n = n - 1,
+						$temp$m = A2($author$project$Model$step, false, m);
+					n = $temp$n;
+					m = $temp$m;
+					continue go;
+				} else {
+					if (n <= 0) {
+						return A2(
+							$author$project$Model$trace,
+							$author$project$Diane$mkErrMsg('time out (possible infinite loop)'),
+							$author$project$Model$stop(m));
+					} else {
+						return m;
+					}
+				}
 			}
-		}
-	};
+		});
 	return A2(
 		$elm$core$Basics$composeR,
 		$author$project$Model$start,
-		A2($elm$core$Basics$composeR, $author$project$Model$updateHistory, go));
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Model$updateHistory,
+			go(100000)));
 }();
 var $author$project$Model$fracX = function (m) {
 	var _v0 = m.dragX;

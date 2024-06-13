@@ -106,8 +106,16 @@ step withHistory =
 
 eval : Model -> Model
 eval =
-    let go m = if m.going then go (step False m) else m in
-    start >> updateHistory >> go
+    let
+        go n m =
+            if m.going && n > 0
+            then go (n - 1) (step False m)
+            else
+                if n <= 0
+                then m |> stop |> trace (mkErrMsg "time out")
+                else m
+    in
+    start >> updateHistory >> go 100000
 
 initConfig prog =
     { stack = []
