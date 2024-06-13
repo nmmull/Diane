@@ -1,4 +1,4 @@
-#+title: Diane (UNDER CONSTRUCTION)
+#+title: Diane
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="indexStyle.css" />
 #+HTML_HEAD: <script src="diane.js"></script>
 #+OPTIONS: html-style:nil H:2 num:nil
@@ -8,20 +8,20 @@ not pretty or all that interesting, but it's simple enough to present
 the syntax and semantics in a straightforward way (and to build a
 reasonable playground for it).
 
-Diane was born out of a need to visualize evaluation.  During the 2024
-spring semester at Boston University, I co-taught a course on
-programming languages in which we used stack-oriented languages as a
-basis for studying operational semantics.  I worked through
-evaulations step-by-step on the board often enough for me to want a
-tool to make the process /automatic/ and /interactive/, along the same
-lines as the [[https://pythontutor.com/cp/composingprograms.html#mode=edit][Python Tutor]] for [[https://www.composingprograms.com][Composing Programs]].
+Diane was born out of a need to visualize evaluation.  During the
+spring (2024), I co-taught a course on [[https://nmmull.github.io/CS320/landing/Spring-2024/index.html][programming languages]] in which
+we often used stack-oriented languages to motivate and demonstrate
+operational semantics.  I worked through step-by-step evaluations on
+the board often enough to want a process for doing it which is /automatic/ and
+/interactive/, along the same lines as the [[https://pythontutor.com/cp/composingprograms.html#mode=edit][Python Tutor]] for [[https://www.composingprograms.com][Composing
+Programs]].
 
 *Disclaimer.* This page is not a tutorial, just a description of
 the language and playground.
 
 * The Playground
-The primary goal of this project was to build a [[file:playground.html][playground]] for toying
-with Diane programs using [[https://elm-lang.org][Elm]].  The playground consists of an editor
+The primary goal of this project was to build a [[file:playground.html][playground]] (in [[https://elm-lang.org][Elm]])
+for toying with Diane programs.  The playground consists of an editor
 window for writing programs, a visualization window for seeing how the
 stack and environment change over the course of evaluation, and a
 console window for seeing intermediate print statements and error
@@ -50,15 +50,15 @@ We take advantage of this below to highlight features of the
 semantics.
 
 Partly out of laziness, partly out of a general bent towards minimal
-interfaces, there are no instructions for using the playground within
-the playground itself, so I've included them here.
+interfaces, there are no instructions for using the playground
+/within/ the playground itself, so I've included them here.
 ** Instructions
 + The *step* button consumes a single command of the program in the
   editor window and updates the stack and environment accordingly.
 + The *run* button consumes as much of the program as possible until
   + the entire program is consumed
   + there is an error
-  + the evaluation times out.
+  + the evaluation times out
 + The *undo* button reverses a step taken by pressing either the
   *step* button or the *run*.
 + The *reset* button resets the program state to its initial state,
@@ -73,23 +73,18 @@ the playground itself, so I've included them here.
   there.[fn:: This cannot be undone.]
 
 ** Keyboard Shortcuts
-It's possible to step through a program while writing it using the
-following keyboard shortcuts.  In most cases you can also hold down
-the key to rapidly step through a program, providing a make-shift
-animation mechanism.
+| \   | *step* |
+| ALT | *run*  |
+| `   | *undo* |
 
-  | key | button |
-  |-----+--------|
-  | \   | step   |
-  |-----+--------|
-  | alt | run    |
-  |-----+--------|
-  | `   | undo   |
-  |-----+--------|
+It's possible to step through a program while writing it using the
+above keyboard shortcuts.  In most cases you can also hold down the
+key to rapidly step through a program, providing a make-shift
+animation mechanism.
 
 * Syntax
 The following is a simple [[https://en.wikipedia.org/wiki/Extended_Backus–Naur_form][EBNF Grammar]] describing a Diane program.  In
-short, a program is a sequence of commands.
+short, a program is a sequence of whitespace-separated commands.
 
 -----
 
@@ -108,18 +103,18 @@ short, a program is a sequence of commands.
 -----
 
 * Semantics
-We take a *value* to be a integer (ℤ) or a program (ℙ) representing a
-subroutine.[fn:: In other word, the set of values is ℤ ∪ ℙ.] A
-*configuration*, written ( S, E, P ), is made up of a stack of
-integers (S), an environment consisting of identifier-value bindings (E), and a
-program as given by the above grammar (P).  The [[https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics][small-step/structural
-operational semantics]] of Diane are given by the reduction rules
-below.
+We take a *value* (𝕍) to be a integer (ℤ) or a program representing a
+subroutine (ℙ).[fn:: In other word, 𝕍 = ℤ ∪ ℙ.] A *configuration*,
+written ( S, E, P ), is made up of a stack of integers (S), an
+environment consisting of identifier-value bindings (E), and a program
+as given by the above grammar (P).  The [[https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics][operational semantics]] of Diane
+are given by the reduction rules below.
 
-*Notation.* We write E[X ↦ A] to mean the environment E but with X
-bound to the value A. We write X ∈ E to mean X is bound in E.  We
-write E[X] for the value to which X is bound in E.  We write E/X for E
-but with any binding of X removed.
+** Notation for Environments
+| E[X ↦ A] | E but with X bound to the value A  |
+| X ∈ E    | X is bound in E                    |
+| E[X]     | the value to which X is bound in E |
+| E/X      | E with any binding of X removed    |
 
 ** Stack Manipulation
 Several commands are dedicated to manipulating the stack. We can
@@ -134,7 +129,7 @@ console.
 
 There is also an unofficial command for *print*-ing the top element of
 the stack and removing it.  See the example below.[fn:: It's
-unofficial because the printed values are not a part of the
+unofficial because printed strings are not a part of the
 configuration.  Semantically, *print* is identical to *drop*.]
 
 #+begin_src
@@ -189,11 +184,11 @@ configuration.  Semantically, *print* is identical to *drop*.]
 
 #+end_src
 
-This is a small example program using these commands.  Press the
-*step* button to see how the stack changes as each command is consumed
-and evaluated.  Note that the last command cannot be consumed because
-there are no integers on the stack to print.  Attempting to consume it
-results in a stack underflow error message.
+The following is a small example program using these commands.  Press
+the *step* button to see how the stack changes as each command is
+consumed and evaluated.  Note that the last command cannot be consumed
+because there are no integers on the stack to duplicate.  Attempting
+to evaluate this command results in a stack underflow error message.
 
 #+BEGIN_EXPORT html
   <div id="push-example"></div>
@@ -206,13 +201,14 @@ results in a stack underflow error message.
   program: `1 2 3
   drop swap dup
   rot rot rot
-  print print print print`
+  print print print
+  dup`
   }});
   </script>
 #+END_EXPORT
 
 ** Arithmetic and Comparisons
-The next set of commands are used to operate on the integers on the
+The commands in this section are used to operate on the integers on the
 stack.  We can
 + (+) add
 + (-) subtract
@@ -221,10 +217,9 @@ stack.  We can
 + (%) determine the modulus
 + (=) check for equality
 + (<) check for less-than
-As above, in the case that there aren't enough integers on the stack
-to perform a given operation, a stack underflow error message is
-printed to the console.  Errors may also occur when trying to divide by
-zero.
+As above, if there aren't enough integers on the stack to perform an
+operation, a stack underflow error message is printed.  An error may
+also occur when trying to divide by zero.
 #+begin_src
 
   ────────────────────────────────────────────────── ( add )
@@ -268,7 +263,7 @@ zero.
   ( 𝑚 :: 𝑛 :: S, E, / P ) ⟶ ( 𝑚 ／ 𝑛 :: S, E, P )
 
 
-  ────────────────────────────────────── ( div )
+  ────────────────────────────────────── ( divErrByZero )
   ( 𝑚 :: 0 :: S, E, / P ) ⟶ DivByZero
 
 
@@ -280,11 +275,12 @@ zero.
   ( ⊥, E, / P ) ⟶ StackUnderflow
 
 
+                         n ≠ 0
   ─────────────────────────────────────────────────── ( mod )
   ( 𝑚 :: 𝑛 :: S, E, % P ) ⟶ ( 𝑚 mod 𝑛 :: S, E, P )
 
 
-  ────────────────────────────────────── ( div )
+  ────────────────────────────────────── ( modErrByZero )
   ( 𝑚 :: 0 :: S, E, % P ) ⟶ DivByZero
 
 
@@ -404,7 +400,7 @@ A variable is just a named integer. We can
 + /free/ a variable, removing its binding from the environment[fn::
   This is useful if we want to make sure it isn't accidentally
   referred to later on in the program.]
-+ /lookup/ a variable binding in the environment (by just typing the variable itself)
++ /lookup/ a variable binding in the environment (by typing the variable itself)
 #+begin_src
 
   ────────────────────────────────────────── ( assign )
@@ -459,7 +455,7 @@ A variable is just a named integer. We can
 #+END_EXPORT
 ** Conditionals
 Finally, there are if-statements for conditional reasoning.  We also
-include while-loops with the usual semantics.
+include while-loops with the usual semantics (i.e., defined in terms of if-statements).
 #+begin_src
 
                            𝑛 ≠ 0

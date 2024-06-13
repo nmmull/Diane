@@ -3,10 +3,10 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2024-06-12 Wed 23:24 -->
+<!-- 2024-06-13 Thu 12:31 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Diane (UNDER CONSTRUCTION)</title>
+<title>Diane</title>
 <meta name="author" content="Nathan  Mull" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" type="text/css" href="indexStyle.css" />
@@ -14,25 +14,26 @@
 </head>
 <body>
 <div id="content" class="content">
-<h1 class="title">Diane (UNDER CONSTRUCTION)</h1>
+<h1 class="title">Diane</h1>
 <div id="table-of-contents" role="doc-toc">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org56b6566">The Playground</a>
+<li><a href="#org01d7724">The Playground</a>
 <ul>
-<li><a href="#org83b68e7">Instructions</a></li>
-<li><a href="#org054981d">Keyboard Shortcuts</a></li>
+<li><a href="#org409bdbc">Instructions</a></li>
+<li><a href="#orgdad4dc4">Keyboard Shortcuts</a></li>
 </ul>
 </li>
-<li><a href="#org9b0fae4">Syntax</a></li>
-<li><a href="#orgd11831b">Semantics</a>
+<li><a href="#org619fe2a">Syntax</a></li>
+<li><a href="#org3bdba48">Semantics</a>
 <ul>
-<li><a href="#org3279107">Stack Manipulation</a></li>
-<li><a href="#org0a37921">Arithmetic and Comparisons</a></li>
-<li><a href="#org728dc2b">Subroutines</a></li>
-<li><a href="#org60eb4a2">Variables</a></li>
-<li><a href="#org606bb7e">Conditionals</a></li>
+<li><a href="#org9ce6039">Notation for Environments</a></li>
+<li><a href="#orga934d9f">Stack Manipulation</a></li>
+<li><a href="#orged78ba9">Arithmetic and Comparisons</a></li>
+<li><a href="#org2a00f69">Subroutines</a></li>
+<li><a href="#orgf303130">Variables</a></li>
+<li><a href="#org4c671ed">Conditionals</a></li>
 </ul>
 </li>
 </ul>
@@ -46,13 +47,13 @@ reasonable playground for it).
 </p>
 
 <p>
-Diane was born out of a need to visualize evaluation.  During the 2024
-spring semester at Boston University, I co-taught a course on
-programming languages in which we used stack-oriented languages as a
-basis for studying operational semantics.  I worked through
-evaulations step-by-step on the board often enough for me to want a
-tool to make the process <i>automatic</i> and <i>interactive</i>, along the same
-lines as the <a href="https://pythontutor.com/cp/composingprograms.html#mode=edit">Python Tutor</a> for <a href="https://www.composingprograms.com">Composing Programs</a>.
+Diane was born out of a need to visualize evaluation.  During the
+spring (2024), I co-taught a course on <a href="https://nmmull.github.io/CS320/landing/Spring-2024/index.html">programming languages</a> in which
+we often used stack-oriented languages to motivate and demonstrate
+operational semantics.  I worked through step-by-step evaluations on
+the board often enough to want a process for doing it which is <i>automatic</i> and
+<i>interactive</i>, along the same lines as the <a href="https://pythontutor.com/cp/composingprograms.html#mode=edit">Python Tutor</a> for <a href="https://www.composingprograms.com">Composing
+Programs</a>.
 </p>
 
 <p>
@@ -60,12 +61,12 @@ lines as the <a href="https://pythontutor.com/cp/composingprograms.html#mode=edi
 the language and playground.
 </p>
 
-<div id="outline-container-org56b6566" class="outline-2">
-<h2 id="org56b6566">The Playground</h2>
-<div class="outline-text-2" id="text-org56b6566">
+<div id="outline-container-org01d7724" class="outline-2">
+<h2 id="org01d7724">The Playground</h2>
+<div class="outline-text-2" id="text-org01d7724">
 <p>
-The primary goal of this project was to build a <a href="playground.html">playground</a> for toying
-with Diane programs using <a href="https://elm-lang.org">Elm</a>.  The playground consists of an editor
+The primary goal of this project was to build a <a href="playground.html">playground</a> (in <a href="https://elm-lang.org">Elm</a>)
+for toying with Diane programs.  The playground consists of an editor
 window for writing programs, a visualization window for seeing how the
 stack and environment change over the course of evaluation, and a
 console window for seeing intermediate print statements and error
@@ -98,13 +99,13 @@ semantics.
 
 <p>
 Partly out of laziness, partly out of a general bent towards minimal
-interfaces, there are no instructions for using the playground within
-the playground itself, so I've included them here.
+interfaces, there are no instructions for using the playground
+<i>within</i> the playground itself, so I've included them here.
 </p>
 </div>
-<div id="outline-container-org83b68e7" class="outline-3">
-<h3 id="org83b68e7">Instructions</h3>
-<div class="outline-text-3" id="text-org83b68e7">
+<div id="outline-container-org409bdbc" class="outline-3">
+<h3 id="org409bdbc">Instructions</h3>
+<div class="outline-text-3" id="text-org409bdbc">
 <ul class="org-ul">
 <li>The <b>step</b> button consumes a single command of the program in the
 editor window and updates the stack and environment accordingly.</li>
@@ -112,7 +113,7 @@ editor window and updates the stack and environment accordingly.</li>
 <ul class="org-ul">
 <li>the entire program is consumed</li>
 <li>there is an error</li>
-<li>the evaluation times out.</li>
+<li>the evaluation times out</li>
 </ul></li>
 <li>The <b>undo</b> button reverses a step taken by pressing either the
 <b>step</b> button or the <b>run</b>.</li>
@@ -127,16 +128,9 @@ there.<sup><a id="fnr.2" class="footref" href="#fn.2" role="doc-backlink">2</a><
 </div>
 </div>
 
-<div id="outline-container-org054981d" class="outline-3">
-<h3 id="org054981d">Keyboard Shortcuts</h3>
-<div class="outline-text-3" id="text-org054981d">
-<p>
-It's possible to step through a program while writing it using the
-following keyboard shortcuts.  In most cases you can also hold down
-the key to rapidly step through a program, providing a make-shift
-animation mechanism.
-</p>
-
+<div id="outline-container-orgdad4dc4" class="outline-3">
+<h3 id="orgdad4dc4">Keyboard Shortcuts</h3>
+<div class="outline-text-3" id="text-orgdad4dc4">
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 
 
@@ -145,41 +139,40 @@ animation mechanism.
 
 <col  class="org-left" />
 </colgroup>
-<thead>
-<tr>
-<th scope="col" class="org-left">key</th>
-<th scope="col" class="org-left">button</th>
-</tr>
-</thead>
 <tbody>
 <tr>
 <td class="org-left">\</td>
-<td class="org-left">step</td>
+<td class="org-left"><b>step</b></td>
 </tr>
-</tbody>
-<tbody>
+
 <tr>
-<td class="org-left">alt</td>
-<td class="org-left">run</td>
+<td class="org-left">ALT</td>
+<td class="org-left"><b>run</b></td>
 </tr>
-</tbody>
-<tbody>
+
 <tr>
 <td class="org-left">`</td>
-<td class="org-left">undo</td>
+<td class="org-left"><b>undo</b></td>
 </tr>
 </tbody>
 </table>
+
+<p>
+It's possible to step through a program while writing it using the
+above keyboard shortcuts.  In most cases you can also hold down the
+key to rapidly step through a program, providing a make-shift
+animation mechanism.
+</p>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org9b0fae4" class="outline-2">
-<h2 id="org9b0fae4">Syntax</h2>
-<div class="outline-text-2" id="text-org9b0fae4">
+<div id="outline-container-org619fe2a" class="outline-2">
+<h2 id="org619fe2a">Syntax</h2>
+<div class="outline-text-2" id="text-org619fe2a">
 <p>
 The following is a simple <a href="https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form">EBNF Grammar</a> describing a Diane program.  In
-short, a program is a sequence of commands.
+short, a program is a sequence of whitespace-separated commands.
 </p>
 
 <hr />
@@ -200,30 +193,58 @@ short, a program is a sequence of commands.
 </div>
 </div>
 
-<div id="outline-container-orgd11831b" class="outline-2">
-<h2 id="orgd11831b">Semantics</h2>
-<div class="outline-text-2" id="text-orgd11831b">
+<div id="outline-container-org3bdba48" class="outline-2">
+<h2 id="org3bdba48">Semantics</h2>
+<div class="outline-text-2" id="text-org3bdba48">
 <p>
-We take a <b>value</b> to be a integer (ℤ) or a program (ℙ) representing a
-subroutine.<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup> A
-<b>configuration</b>, written ( S, E, P ), is made up of a stack of
-integers (S), an environment consisting of identifier-value bindings (E), and a
-program as given by the above grammar (P).  The <a href="https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics">small-step/structural
-operational semantics</a> of Diane are given by the reduction rules
-below.
-</p>
-
-<p>
-<b>Notation.</b> We write E[X ↦ A] to mean the environment E but with X
-bound to the value A. We write X ∈ E to mean X is bound in E.  We
-write E[X] for the value to which X is bound in E.  We write E/X for E
-but with any binding of X removed.
+We take a <b>value</b> (𝕍) to be a integer (ℤ) or a program representing a
+subroutine (ℙ).<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup> A <b>configuration</b>,
+written ( S, E, P ), is made up of a stack of integers (S), an
+environment consisting of identifier-value bindings (E), and a program
+as given by the above grammar (P).  The <a href="https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics">operational semantics</a> of Diane
+are given by the reduction rules below.
 </p>
 </div>
 
-<div id="outline-container-org3279107" class="outline-3">
-<h3 id="org3279107">Stack Manipulation</h3>
-<div class="outline-text-3" id="text-org3279107">
+<div id="outline-container-org9ce6039" class="outline-3">
+<h3 id="org9ce6039">Notation for Environments</h3>
+<div class="outline-text-3" id="text-org9ce6039">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">E[X ↦ A]</td>
+<td class="org-left">E but with X bound to the value A</td>
+</tr>
+
+<tr>
+<td class="org-left">X ∈ E</td>
+<td class="org-left">X is bound in E</td>
+</tr>
+
+<tr>
+<td class="org-left">E[X]</td>
+<td class="org-left">the value to which X is bound in E</td>
+</tr>
+
+<tr>
+<td class="org-left">E/X</td>
+<td class="org-left">E with any binding of X removed</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-orga934d9f" class="outline-3">
+<h3 id="orga934d9f">Stack Manipulation</h3>
+<div class="outline-text-3" id="text-orga934d9f">
 <p>
 Several commands are dedicated to manipulating the stack. We can
 </p>
@@ -298,11 +319,11 @@ the stack and removing it.  See the example below.<sup><a id="fnr.4" class="foot
 </pre>
 
 <p>
-This is a small example program using these commands.  Press the
-<b>step</b> button to see how the stack changes as each command is consumed
-and evaluated.  Note that the last command cannot be consumed because
-there are no integers on the stack to print.  Attempting to consume it
-results in a stack underflow error message.
+The following is a small example program using these commands.  Press
+the <b>step</b> button to see how the stack changes as each command is
+consumed and evaluated.  Note that the last command cannot be consumed
+because there are no integers on the stack to duplicate.  Attempting
+to evaluate this command results in a stack underflow error message.
 </p>
 
 <div id="push-example"></div>
@@ -315,17 +336,18 @@ adjustable: false,
 program: `1 2 3
 drop swap dup
 rot rot rot
-print print print print`
+print print print
+dup`
 }});
 </script>
 </div>
 </div>
 
-<div id="outline-container-org0a37921" class="outline-3">
-<h3 id="org0a37921">Arithmetic and Comparisons</h3>
-<div class="outline-text-3" id="text-org0a37921">
+<div id="outline-container-orged78ba9" class="outline-3">
+<h3 id="orged78ba9">Arithmetic and Comparisons</h3>
+<div class="outline-text-3" id="text-orged78ba9">
 <p>
-The next set of commands are used to operate on the integers on the
+The commands in this section are used to operate on the integers on the
 stack.  We can
 </p>
 <ul class="org-ul">
@@ -338,10 +360,9 @@ stack.  We can
 <li>(&lt;) check for less-than</li>
 </ul>
 <p>
-As above, in the case that there aren't enough integers on the stack
-to perform a given operation, a stack underflow error message is
-printed to the console.  Errors may also occur when trying to divide by
-zero.
+As above, if there aren't enough integers on the stack to perform an
+operation, a stack underflow error message is printed.  An error may
+also occur when trying to divide by zero.
 </p>
 <pre class="example">
 
@@ -386,7 +407,7 @@ zero.
 ( 𝑚 :: 𝑛 :: S, E, / P ) ⟶ ( 𝑚 ／ 𝑛 :: S, E, P )
 
 
-────────────────────────────────────── ( div )
+────────────────────────────────────── ( divErrByZero )
 ( 𝑚 :: 0 :: S, E, / P ) ⟶ DivByZero
 
 
@@ -398,11 +419,12 @@ zero.
 ( ⊥, E, / P ) ⟶ StackUnderflow
 
 
+                       n ≠ 0
 ─────────────────────────────────────────────────── ( mod )
 ( 𝑚 :: 𝑛 :: S, E, % P ) ⟶ ( 𝑚 mod 𝑛 :: S, E, P )
 
 
-────────────────────────────────────── ( div )
+────────────────────────────────────── ( modErrByZero )
 ( 𝑚 :: 0 :: S, E, % P ) ⟶ DivByZero
 
 
@@ -462,9 +484,9 @@ program: `3 4 5 + * 4 swap / 7 < 5 /`
 </script>
 </div>
 </div>
-<div id="outline-container-org728dc2b" class="outline-3">
-<h3 id="org728dc2b">Subroutines</h3>
-<div class="outline-text-3" id="text-org728dc2b">
+<div id="outline-container-org2a00f69" class="outline-3">
+<h3 id="org2a00f69">Subroutines</h3>
+<div class="outline-text-3" id="text-org2a00f69">
 <p>
 A subroutine is just a named program.  We can <i>define</i> subroutines and
 <i>call</i> them.  Defining a subroutine adds a binding in the environment
@@ -520,16 +542,16 @@ def DUPTWO {
 </script>
 </div>
 </div>
-<div id="outline-container-org60eb4a2" class="outline-3">
-<h3 id="org60eb4a2">Variables</h3>
-<div class="outline-text-3" id="text-org60eb4a2">
+<div id="outline-container-orgf303130" class="outline-3">
+<h3 id="orgf303130">Variables</h3>
+<div class="outline-text-3" id="text-orgf303130">
 <p>
 A variable is just a named integer. We can
 </p>
 <ul class="org-ul">
 <li><i>assign</i> an integer to a variable, which adds a binding to the environment</li>
 <li><i>free</i> a variable, removing its binding from the environment<sup><a id="fnr.6" class="footref" href="#fn.6" role="doc-backlink">6</a></sup></li>
-<li><i>lookup</i> a variable binding in the environment (by just typing the variable itself)</li>
+<li><i>lookup</i> a variable binding in the environment (by typing the variable itself)</li>
 </ul>
 <pre class="example">
 
@@ -583,12 +605,12 @@ X Y + @Z
 </script>
 </div>
 </div>
-<div id="outline-container-org606bb7e" class="outline-3">
-<h3 id="org606bb7e">Conditionals</h3>
-<div class="outline-text-3" id="text-org606bb7e">
+<div id="outline-container-org4c671ed" class="outline-3">
+<h3 id="org4c671ed">Conditionals</h3>
+<div class="outline-text-3" id="text-org4c671ed">
 <p>
 Finally, there are if-statements for conditional reasoning.  We also
-include while-loops with the usual semantics.
+include while-loops with the usual semantics (i.e., defined in terms of if-statements).
 </p>
 <pre class="example">
 
@@ -647,10 +669,10 @@ program.</p></div></div>
 
 <div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2" role="doc-backlink">2</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">This cannot be undone.</p></div></div>
 
-<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3" role="doc-backlink">3</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">In other word, the set of values is ℤ ∪ ℙ.</p></div></div>
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3" role="doc-backlink">3</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">In other word, 𝕍 = ℤ ∪ ℙ.</p></div></div>
 
 <div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4" role="doc-backlink">4</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">It's
-unofficial because the printed values are not a part of the
+unofficial because printed strings are not a part of the
 configuration.  Semantically, <b>print</b> is identical to <b>drop</b>.</p></div></div>
 
 <div class="footdef"><sup><a id="fn.5" class="footnum" href="#fnr.5" role="doc-backlink">5</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">Its truly amazing to me how simple this is.</p></div></div>
