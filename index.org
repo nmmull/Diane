@@ -73,7 +73,7 @@ the playground itself, so I've included them here.
   there.[fn:: This cannot be undone.]
 
 ** Keyboard Shortcuts
-It is possible to step through a program while writing it using the
+It's possible to step through a program while writing it using the
 following keyboard shortcuts.  In most cases you can also hold down
 the key to rapidly step through a program, providing a make-shift
 animation mechanism.
@@ -111,7 +111,7 @@ short, a program is a sequence of commands.
 We take a *value* to be a integer (ℤ) or a program (ℙ) representing a
 subroutine.[fn:: In other word, the set of values is ℤ ∪ ℙ.] A
 *configuration*, written ( S, E, P ), is made up of a stack of
-integers (S), an environment consisting of identifier-value (E), and a
+integers (S), an environment consisting of identifier-value bindings (E), and a
 program as given by the above grammar (P).  The [[https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics][small-step/structural
 operational semantics]] of Diane are given by the reduction rules
 below.
@@ -122,8 +122,7 @@ write E[X] for the value to which X is bound in E.  We write E/X for E
 but with any binding of X removed.
 
 ** Stack Manipulation
-Several commands are dedicated to manipulating values on the
-stack. We can
+Several commands are dedicated to manipulating the stack. We can
 + *push* an integer onto the stack
 + *drop* the top element off the stack
 + *swap* the top two elements on the stack
@@ -135,7 +134,7 @@ console.
 
 There is also an unofficial command for *print*-ing the top element of
 the stack and removing it.  See the example below.[fn:: It's
-unofficial because the printed values are not a part of a
+unofficial because the printed values are not a part of the
 configuration.  Semantically, *print* is identical to *drop*.]
 
 #+begin_src
@@ -224,7 +223,7 @@ stack.  We can
 + (<) check for less-than
 As above, in the case that there aren't enough integers on the stack
 to perform a given operation, a stack underflow error message is
-printed to the trace.  Errors may also occur when trying to divide by
+printed to the console.  Errors may also occur when trying to divide by
 zero.
 #+begin_src
 
@@ -401,11 +400,10 @@ evaluated.[fn:: Its truly amazing to me how simple this is.]
 #+END_EXPORT
 ** Variables
 A variable is just a named integer. We can
-+ /assign/ an integer to a variable, which adding a binding of that
-  variable to its new value in the environment
-+ /free/ a variable, removing its binding from environment (in case we
-  want to make sure it isn't accidentally referred to later on in the
-  program)
++ /assign/ an integer to a variable, which adds a binding to the environment
++ /free/ a variable, removing its binding from the environment[fn::
+  This is useful if we want to make sure it isn't accidentally
+  referred to later on in the program.]
 + /lookup/ a variable binding in the environment (by just typing the variable itself)
 #+begin_src
 

@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2024-06-12 Wed 23:19 -->
+<!-- 2024-06-12 Wed 23:24 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Diane (UNDER CONSTRUCTION)</title>
@@ -19,20 +19,20 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org988dcb2">The Playground</a>
+<li><a href="#org56b6566">The Playground</a>
 <ul>
-<li><a href="#org63d5f88">Instructions</a></li>
-<li><a href="#org1a75289">Keyboard Shortcuts</a></li>
+<li><a href="#org83b68e7">Instructions</a></li>
+<li><a href="#org054981d">Keyboard Shortcuts</a></li>
 </ul>
 </li>
-<li><a href="#org968e246">Syntax</a></li>
-<li><a href="#orgb5c8064">Semantics</a>
+<li><a href="#org9b0fae4">Syntax</a></li>
+<li><a href="#orgd11831b">Semantics</a>
 <ul>
-<li><a href="#orgde58ce8">Stack Manipulation</a></li>
-<li><a href="#orgcc08bb2">Arithmetic and Comparisons</a></li>
-<li><a href="#orgc0f9286">Subroutines</a></li>
-<li><a href="#orgfdc99ea">Variables</a></li>
-<li><a href="#org7b7bcf1">Conditionals</a></li>
+<li><a href="#org3279107">Stack Manipulation</a></li>
+<li><a href="#org0a37921">Arithmetic and Comparisons</a></li>
+<li><a href="#org728dc2b">Subroutines</a></li>
+<li><a href="#org60eb4a2">Variables</a></li>
+<li><a href="#org606bb7e">Conditionals</a></li>
 </ul>
 </li>
 </ul>
@@ -60,9 +60,9 @@ lines as the <a href="https://pythontutor.com/cp/composingprograms.html#mode=edi
 the language and playground.
 </p>
 
-<div id="outline-container-org988dcb2" class="outline-2">
-<h2 id="org988dcb2">The Playground</h2>
-<div class="outline-text-2" id="text-org988dcb2">
+<div id="outline-container-org56b6566" class="outline-2">
+<h2 id="org56b6566">The Playground</h2>
+<div class="outline-text-2" id="text-org56b6566">
 <p>
 The primary goal of this project was to build a <a href="playground.html">playground</a> for toying
 with Diane programs using <a href="https://elm-lang.org">Elm</a>.  The playground consists of an editor
@@ -102,9 +102,9 @@ interfaces, there are no instructions for using the playground within
 the playground itself, so I've included them here.
 </p>
 </div>
-<div id="outline-container-org63d5f88" class="outline-3">
-<h3 id="org63d5f88">Instructions</h3>
-<div class="outline-text-3" id="text-org63d5f88">
+<div id="outline-container-org83b68e7" class="outline-3">
+<h3 id="org83b68e7">Instructions</h3>
+<div class="outline-text-3" id="text-org83b68e7">
 <ul class="org-ul">
 <li>The <b>step</b> button consumes a single command of the program in the
 editor window and updates the stack and environment accordingly.</li>
@@ -127,11 +127,11 @@ there.<sup><a id="fnr.2" class="footref" href="#fn.2" role="doc-backlink">2</a><
 </div>
 </div>
 
-<div id="outline-container-org1a75289" class="outline-3">
-<h3 id="org1a75289">Keyboard Shortcuts</h3>
-<div class="outline-text-3" id="text-org1a75289">
+<div id="outline-container-org054981d" class="outline-3">
+<h3 id="org054981d">Keyboard Shortcuts</h3>
+<div class="outline-text-3" id="text-org054981d">
 <p>
-It is possible to step through a program while writing it using the
+It's possible to step through a program while writing it using the
 following keyboard shortcuts.  In most cases you can also hold down
 the key to rapidly step through a program, providing a make-shift
 animation mechanism.
@@ -174,9 +174,9 @@ animation mechanism.
 </div>
 </div>
 
-<div id="outline-container-org968e246" class="outline-2">
-<h2 id="org968e246">Syntax</h2>
-<div class="outline-text-2" id="text-org968e246">
+<div id="outline-container-org9b0fae4" class="outline-2">
+<h2 id="org9b0fae4">Syntax</h2>
+<div class="outline-text-2" id="text-org9b0fae4">
 <p>
 The following is a simple <a href="https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form">EBNF Grammar</a> describing a Diane program.  In
 short, a program is a sequence of commands.
@@ -200,14 +200,14 @@ short, a program is a sequence of commands.
 </div>
 </div>
 
-<div id="outline-container-orgb5c8064" class="outline-2">
-<h2 id="orgb5c8064">Semantics</h2>
-<div class="outline-text-2" id="text-orgb5c8064">
+<div id="outline-container-orgd11831b" class="outline-2">
+<h2 id="orgd11831b">Semantics</h2>
+<div class="outline-text-2" id="text-orgd11831b">
 <p>
 We take a <b>value</b> to be a integer (ℤ) or a program (ℙ) representing a
 subroutine.<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup> A
 <b>configuration</b>, written ( S, E, P ), is made up of a stack of
-integers (S), an environment consisting of identifier-value (E), and a
+integers (S), an environment consisting of identifier-value bindings (E), and a
 program as given by the above grammar (P).  The <a href="https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics">small-step/structural
 operational semantics</a> of Diane are given by the reduction rules
 below.
@@ -221,12 +221,11 @@ but with any binding of X removed.
 </p>
 </div>
 
-<div id="outline-container-orgde58ce8" class="outline-3">
-<h3 id="orgde58ce8">Stack Manipulation</h3>
-<div class="outline-text-3" id="text-orgde58ce8">
+<div id="outline-container-org3279107" class="outline-3">
+<h3 id="org3279107">Stack Manipulation</h3>
+<div class="outline-text-3" id="text-org3279107">
 <p>
-Several commands are dedicated to manipulating values on the
-stack. We can
+Several commands are dedicated to manipulating the stack. We can
 </p>
 <ul class="org-ul">
 <li><b>push</b> an integer onto the stack</li>
@@ -322,9 +321,9 @@ print print print print`
 </div>
 </div>
 
-<div id="outline-container-orgcc08bb2" class="outline-3">
-<h3 id="orgcc08bb2">Arithmetic and Comparisons</h3>
-<div class="outline-text-3" id="text-orgcc08bb2">
+<div id="outline-container-org0a37921" class="outline-3">
+<h3 id="org0a37921">Arithmetic and Comparisons</h3>
+<div class="outline-text-3" id="text-org0a37921">
 <p>
 The next set of commands are used to operate on the integers on the
 stack.  We can
@@ -341,7 +340,7 @@ stack.  We can
 <p>
 As above, in the case that there aren't enough integers on the stack
 to perform a given operation, a stack underflow error message is
-printed to the trace.  Errors may also occur when trying to divide by
+printed to the console.  Errors may also occur when trying to divide by
 zero.
 </p>
 <pre class="example">
@@ -463,9 +462,9 @@ program: `3 4 5 + * 4 swap / 7 < 5 /`
 </script>
 </div>
 </div>
-<div id="outline-container-orgc0f9286" class="outline-3">
-<h3 id="orgc0f9286">Subroutines</h3>
-<div class="outline-text-3" id="text-orgc0f9286">
+<div id="outline-container-org728dc2b" class="outline-3">
+<h3 id="org728dc2b">Subroutines</h3>
+<div class="outline-text-3" id="text-org728dc2b">
 <p>
 A subroutine is just a named program.  We can <i>define</i> subroutines and
 <i>call</i> them.  Defining a subroutine adds a binding in the environment
@@ -521,18 +520,15 @@ def DUPTWO {
 </script>
 </div>
 </div>
-<div id="outline-container-orgfdc99ea" class="outline-3">
-<h3 id="orgfdc99ea">Variables</h3>
-<div class="outline-text-3" id="text-orgfdc99ea">
+<div id="outline-container-org60eb4a2" class="outline-3">
+<h3 id="org60eb4a2">Variables</h3>
+<div class="outline-text-3" id="text-org60eb4a2">
 <p>
 A variable is just a named integer. We can
 </p>
 <ul class="org-ul">
-<li><i>assign</i> an integer to a variable, which adding a binding of that
-variable to its new value in the environment</li>
-<li><i>free</i> a variable, removing its binding from environment (in case we
-want to make sure it isn't accidentally referred to later on in the
-program)</li>
+<li><i>assign</i> an integer to a variable, which adds a binding to the environment</li>
+<li><i>free</i> a variable, removing its binding from the environment<sup><a id="fnr.6" class="footref" href="#fn.6" role="doc-backlink">6</a></sup></li>
 <li><i>lookup</i> a variable binding in the environment (by just typing the variable itself)</li>
 </ul>
 <pre class="example">
@@ -587,9 +583,9 @@ X Y + @Z
 </script>
 </div>
 </div>
-<div id="outline-container-org7b7bcf1" class="outline-3">
-<h3 id="org7b7bcf1">Conditionals</h3>
-<div class="outline-text-3" id="text-org7b7bcf1">
+<div id="outline-container-org606bb7e" class="outline-3">
+<h3 id="org606bb7e">Conditionals</h3>
+<div class="outline-text-3" id="text-org606bb7e">
 <p>
 Finally, there are if-statements for conditional reasoning.  We also
 include while-loops with the usual semantics.
@@ -654,10 +650,13 @@ program.</p></div></div>
 <div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3" role="doc-backlink">3</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">In other word, the set of values is ℤ ∪ ℙ.</p></div></div>
 
 <div class="footdef"><sup><a id="fn.4" class="footnum" href="#fnr.4" role="doc-backlink">4</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">It's
-unofficial because the printed values are not a part of a
+unofficial because the printed values are not a part of the
 configuration.  Semantically, <b>print</b> is identical to <b>drop</b>.</p></div></div>
 
 <div class="footdef"><sup><a id="fn.5" class="footnum" href="#fnr.5" role="doc-backlink">5</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">Its truly amazing to me how simple this is.</p></div></div>
+
+<div class="footdef"><sup><a id="fn.6" class="footnum" href="#fnr.6" role="doc-backlink">6</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">This is useful if we want to make sure it isn't accidentally
+referred to later on in the program.</p></div></div>
 
 
 </div>
