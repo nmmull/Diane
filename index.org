@@ -3,7 +3,7 @@
 #+HTML_HEAD: <script src="diane.js"></script>
 #+OPTIONS: html-style:nil H:2 num:nil
 
-Diane is a *toy stack-oriented language with dynamic scoping*.  It's
+[[https://github.com/nmmull/Diane][Diane]] is a *toy stack-oriented language with dynamic scoping*.  It's
 not pretty or all that interesting, but it's simple enough to present
 the syntax and semantics in a straightforward way (and to build a
 reasonable playground for it).
