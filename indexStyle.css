@@ -4,7 +4,7 @@ body {
 		font-size: 18px;
 		margin-left: 30px;
 		margin-top: 30px;
-		max-width: 1000px;
+		max-width: min(1000px, calc(100% - 400px));
 }
 
 hr {
@@ -26,4 +26,5 @@ hr {
     right: 0;
 		top: 0;
 		margin-right: 30px;
+		max-width: 400px;
 }
