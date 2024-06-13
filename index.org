@@ -21,10 +21,11 @@ the language and playground.
 
 * The Playground
 The primary goal of this project was to build a [[file:playground.html][playground]] for toying
-with Diane programs.  It consists of an editor window for writing
-programs, a visualization window for seeing how the stack and
-environment change over the course of evaluation, and a console window
-for seeing intermediate print statements and error messages.
+with Diane programs using [[https://elm-lang.org][Elm]].  The playground consists of an editor
+window for writing programs, a visualization window for seeing how the
+stack and environment change over the course of evaluation, and a
+console window for seeing intermediate print statements and error
+messages.
 
 The playground can also be embedded:
 #+BEGIN_EXPORT html
