@@ -59,16 +59,16 @@ the playground itself, so I've included them here.
   + the entire program is consumed
   + there is an error
   + the evaluation times out.
-+ The *undo* button reverses a step taking by pressing either the
++ The *undo* button reverses a step taken by pressing either the
   *step* button or the *run*.
 + The *reset* button resets the program state to its initial state,
   clearing the undo history.
 + The *save* button sets the program in the editor window to be the
-  program in the initial program state. This also clears the undo
+  program of the initial state. This also clears the undo
   history.[fn:: Note that this only saves the program, not the whole
   program state.  When reseting, the stack and environment will be
   empty, but the inital program will be the most recently saved
-  program]
+  program.]
 + The *clear* button in the console window clears the messages printed
   there.[fn:: This cannot be undone.]
 
