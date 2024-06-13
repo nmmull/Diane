@@ -5856,30 +5856,10 @@ var $author$project$Model$changeProgram = F2(
 					{program: newProgram})
 			});
 	});
-var $author$project$Model$clearEnv = function (m) {
-	var c = m.config;
-	return _Utils_update(
-		m,
-		{
-			config: _Utils_update(
-				c,
-				{env: $author$project$Diane$emptyEnv})
-		});
-};
 var $author$project$Model$clearHistory = function (m) {
 	return _Utils_update(
 		m,
 		{history: _List_Nil});
-};
-var $author$project$Model$clearStack = function (m) {
-	var c = m.config;
-	return _Utils_update(
-		m,
-		{
-			config: _Utils_update(
-				c,
-				{stack: _List_Nil})
-		});
 };
 var $author$project$Model$clearTrace = function (m) {
 	return _Utils_update(
@@ -5888,6 +5868,51 @@ var $author$project$Model$clearTrace = function (m) {
 };
 var $author$project$Diane$mkErrMsg = function (s) {
 	return 'ERROR: ' + (s + '.');
+};
+var $author$project$Model$trace = F2(
+	function (msg, m) {
+		return _Utils_update(
+			m,
+			{
+				trace: A2($elm$core$List$cons, msg, m.trace)
+			});
+	});
+var $author$project$Model$maybeTrace = function (maybeMsg) {
+	if (maybeMsg.$ === 'Just') {
+		var msg = maybeMsg.a;
+		return $author$project$Model$trace(msg);
+	} else {
+		return $elm$core$Basics$identity;
+	}
+};
+var $author$project$Model$stop = function (m) {
+	return _Utils_update(
+		m,
+		{going: false});
+};
+var $author$project$Model$panic = function (msg) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Model$maybeTrace(
+			$elm$core$Maybe$Just(msg)),
+		$author$project$Model$stop);
+};
+var $author$project$Model$read = function (m) {
+	if (_Utils_eq(m.config.program, m.programCopy)) {
+		return m;
+	} else {
+		var c = m.config;
+		return _Utils_update(
+			m,
+			{
+				history: A2(
+					$elm$core$List$cons,
+					_Utils_update(
+						c,
+						{program: m.savedProgram}),
+					m.history)
+			});
+	}
 };
 var $author$project$Model$start = function (m) {
 	return _Utils_update(
@@ -6886,34 +6911,6 @@ var $author$project$Diane$evalCommand = F2(
 		return $elm$core$Result$Err(
 			$author$project$Diane$StackUnderflow(com));
 	});
-var $author$project$Model$trace = F2(
-	function (msg, m) {
-		return _Utils_update(
-			m,
-			{
-				trace: A2($elm$core$List$cons, msg, m.trace)
-			});
-	});
-var $author$project$Model$maybeTrace = function (maybeMsg) {
-	if (maybeMsg.$ === 'Just') {
-		var msg = maybeMsg.a;
-		return $author$project$Model$trace(msg);
-	} else {
-		return $elm$core$Basics$identity;
-	}
-};
-var $author$project$Model$stop = function (m) {
-	return _Utils_update(
-		m,
-		{going: false});
-};
-var $author$project$Model$panic = function (msg) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$author$project$Model$maybeTrace(
-			$elm$core$Maybe$Just(msg)),
-		$author$project$Model$stop);
-};
 var $author$project$Model$evalAndThen = F3(
 	function (go, _v0, model) {
 		var command = _v0.command;
@@ -8142,22 +8139,11 @@ var $author$project$Model$parseAndThen = F2(
 	});
 var $author$project$Model$updateConfig = F3(
 	function (withHistory, config, model) {
-		var c = model.config;
-		var go = function (m) {
-			var newHistory = _Utils_eq(c.program, m.programCopy) ? A2($elm$core$List$cons, c, m.history) : A2(
-				$elm$core$List$cons,
-				c,
-				A2(
-					$elm$core$List$cons,
-					_Utils_update(
-						c,
-						{program: m.programCopy}),
-					m.history));
-			return _Utils_update(
-				m,
-				{history: newHistory});
-		};
-		var m = withHistory ? go(model) : model;
+		var m = withHistory ? _Utils_update(
+			model,
+			{
+				history: A2($elm$core$List$cons, model.config, model.history)
+			}) : model;
 		return _Utils_update(
 			m,
 			{config: config, programCopy: config.program});
@@ -8180,18 +8166,19 @@ var $author$project$Model$step = function (withHistory) {
 			},
 			$author$project$Diane$done),
 		$author$project$Model$stop,
-		$author$project$Model$parseAndThen(
-			$author$project$Model$evalAndThen(go)));
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Model$read,
+			$author$project$Model$parseAndThen(
+				$author$project$Model$evalAndThen(go))));
 };
-var $author$project$Model$updateHistory = function (m) {
-	return A3($author$project$Model$updateConfig, true, m.config, m);
-};
-var $author$project$Model$eval = function () {
+var $author$project$Model$eval = function (model) {
+	var timeout = 100000;
 	var go = F2(
 		function (n, m) {
 			go:
 			while (true) {
-				if (m.going && (n > 0)) {
+				if ((n > 0) && m.going) {
 					var $temp$n = n - 1,
 						$temp$m = A2($author$project$Model$step, false, m);
 					n = $temp$n;
@@ -8199,24 +8186,31 @@ var $author$project$Model$eval = function () {
 					continue go;
 				} else {
 					if (n <= 0) {
-						return A2(
-							$author$project$Model$trace,
-							$author$project$Diane$mkErrMsg('time out'),
-							$author$project$Model$stop(m));
+						return $elm$core$Maybe$Nothing;
 					} else {
-						return m;
+						return $elm$core$Maybe$Just(m);
 					}
 				}
 			}
 		});
-	return A2(
-		$elm$core$Basics$composeR,
-		$author$project$Model$start,
-		A2(
-			$elm$core$Basics$composeR,
-			$author$project$Model$updateHistory,
-			go(100000)));
-}();
+	var _v0 = A2(
+		go,
+		timeout,
+		$author$project$Model$start(model));
+	if (_v0.$ === 'Just') {
+		var next = _v0.a;
+		return _Utils_eq(next.config.program, model.config.program) ? next : _Utils_update(
+			next,
+			{
+				history: A2($elm$core$List$cons, model.config, next.history)
+			});
+	} else {
+		return A2(
+			$author$project$Model$panic,
+			$author$project$Diane$mkErrMsg('Time out'),
+			$author$project$Model$read(model));
+	}
+};
 var $author$project$Model$fracX = function (m) {
 	var _v0 = m.dragX;
 	if (_v0.$ === 'Static') {
@@ -8251,7 +8245,7 @@ var $author$project$Model$reset = A2(
 var $author$project$Model$save = function (m) {
 	return _Utils_update(
 		m,
-		{savedProgram: m.config.program});
+		{programCopy: m.config.program, savedProgram: m.config.program});
 };
 var $author$project$Model$popHistoryAndThen = F2(
 	function (go, m) {
@@ -8302,10 +8296,7 @@ var $author$project$Update$update_ = function (msg) {
 		case 'ClearConsole':
 			return $author$project$Model$clearTrace;
 		case 'ClearData':
-			return A2(
-				$elm$core$Basics$composeR,
-				$author$project$Model$updateHistory,
-				A2($elm$core$Basics$composeR, $author$project$Model$clearStack, $author$project$Model$clearEnv));
+			return $elm$core$Basics$identity;
 		case 'DragStartX':
 			return function (m) {
 				return _Utils_update(

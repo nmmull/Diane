@@ -38,10 +38,10 @@ update_ msg =
         Save ->
             save
             >> clearHistory
-            >> trace "Program saved (and history cleared)"
+            >> trace "Program saved (and history cleared)."
         Change newProgram -> changeProgram newProgram
         ClearConsole -> clearTrace
-        ClearData -> updateHistory >> clearStack >> clearEnv
+        ClearData -> identity -- NO LONGER IN USE: updateHistory >> clearStack >> clearEnv
         DragStartX -> \m ->
             { m | dragX = Moving (fracX m) }
         DragMoveX isDown frac -> \m ->

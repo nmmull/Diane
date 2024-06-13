@@ -25,20 +25,8 @@ ifThenElse f yes no m = if f m then yes m else no m
 
 updateConfig : Bool -> Config -> Model -> Model
 updateConfig withHistory config model =
-    let c = model.config in
-    let
-        go m =
-            let
-                newHistory =
-                    if c.program == m.programCopy
-                    then c :: m.history
-                    else c :: { c | program = m.programCopy } :: m.history
-            in { m | history = newHistory }
-    in
-    let
-        m =
-            if withHistory
-            then go model
+    let m = if withHistory
+            then { model | history = model.config :: model.history }
             else model
     in { m | config = config, programCopy = config.program }
 
@@ -83,11 +71,17 @@ changeProgram newProgram m =
     { m | config = { c | program = newProgram } }
 
 clearHistory m = { m | history = [] }
-updateHistory m = updateConfig True m.config m
+
+read m =
+    if m.config.program == m.programCopy
+    then m
+    else
+        let c = m.config in
+        { m | history = { c | program = m.savedProgram } :: m.history }
 
 stop m = { m | going = False }
 start m = { m | going = True }
-save m = { m | savedProgram = m.config.program }
+save m = { m | savedProgram = m.config.program, programCopy = m.config.program }
 trace msg m = { m | trace = msg :: m.trace }
 reset = stop >> reloadProgram >> clearHistory
 undo = stop >> popHistoryAndThen (updateConfig False)
@@ -102,20 +96,25 @@ step withHistory =
     ifThenElse
         (.config >> done)
         stop
-        (parseAndThen (evalAndThen go))
+        (read >> parseAndThen (evalAndThen go))
 
 eval : Model -> Model
-eval =
+eval model =
+    let timeout = 100000 in
     let
         go n m =
-            if m.going && n > 0
+            if n > 0 && m.going
             then go (n - 1) (step False m)
-            else
-                if n <= 0
-                then m |> stop |> trace (mkErrMsg "time out")
-                else m
+            else if n <= 0
+            then Nothing
+            else Just m
     in
-    start >> updateHistory >> go 100000
+    case model |> start |> go timeout of
+        Just next ->
+            if next.config.program == model.config.program -- HACKY
+            then next
+            else { next | history = model.config :: next.history }
+        Nothing -> model |> read |> panic (mkErrMsg "Time out")
 
 initConfig prog =
     { stack = []
