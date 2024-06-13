@@ -1,26 +1,8 @@
 module View exposing (..)
 
-import Html exposing
-    (Html
-    , text
-    , button
-    , textarea
-    , div
-    )
-import Html.Events exposing
-    ( onClick
-    , onInput
-    , onMouseDown
-    , preventDefaultOn
-    )
-import Html.Attributes exposing
-    ( id
-    , value
-    , placeholder
-    , disabled
-    , style
-    )
-
+import Html exposing (Html, text, button, textarea, div)
+import Html.Events exposing (onClick, onInput, onMouseDown, preventDefaultOn)
+import Html.Attributes exposing (id, value, placeholder, disabled, style)
 import Dict
 import Diane exposing (..)
 import Model exposing (..)
@@ -79,10 +61,14 @@ pEventY m =
         Static _ -> "auto"
         Moving _ -> "none"
 
-
 console : Model -> Html Msg
 console m =
-    let line s = div [] [ text s ] in
+    let
+        traceHtml =
+            div [] [ text (String.join " " (List.reverse m.trace)) ]
+    in
+    -- let line s = div [] [ text s ] in
+    -- let traceHtml = div [] (List.map line (List.reverse m.trace)) in
     div
         [ id "console-pane"
         , style "pointer-events" (pEventY m)
@@ -90,7 +76,7 @@ console m =
         , style "height" (percent (1 - fracY m))
         ]
         [ div [ id "console-window" ]
-            [ div [ id "console" ] (List.map line (List.reverse m.trace)) ]
+            [ div [ id "console" ] [ traceHtml ] ]
         ,  button
             [ id "clear-console"
             , disabled (List.isEmpty m.trace)
@@ -133,20 +119,24 @@ viz m =
 
 vsplit : Model -> Html Msg
 vsplit m =
-    div
-        [ id "vsplit"
-        , style "left" (percent (fracX m))
-        , onMouseDown DragStartX
-        ]
+    let
+        adjust =
+            if m.adjustable
+            then onMouseDown DragStartX
+            else style "cursor" "auto"
+    in
+    div (adjust :: [ id "vsplit" , style "left" (percent (fracX m))])
         [ div [ id "vline" ] [] ]
 
 hsplit : Model -> Html Msg
 hsplit m =
-    div
-        [ id "right-split"
-        , style "top" (percent (fracY m))
-        , onMouseDown DragStartY
-        ]
+    let
+        adjust =
+            if m.adjustable
+            then onMouseDown DragStartY
+            else style "cursor" "auto"
+    in
+    div (adjust :: [ id "right-split", style "top" (percent (fracY m)) ])
         [ div [ id "hline" ] [] ]
 
 view : Model -> Html Msg
@@ -172,8 +162,5 @@ view m =
             , style "user-select" (pEventX m)
             , style "width" (percent (1 - fracX m))
             ]
-            [ viz m
-            , hsplit m
-            , console m
-            ]
+            ((viz m) :: (if m.hasTrace then [hsplit m, console m] else []))
         ]

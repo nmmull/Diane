@@ -1,14 +1,18 @@
 module Main exposing (..)
 
 import Browser
-import Model exposing (initModel)
-import Update exposing (noCmd, update, subscriptions)
+import Diane exposing (Prog)
+import Model exposing (Model, initModel)
+import Update exposing (Msg, Flags, noCmd, update, subscriptions)
 import View exposing (view)
 
+init : Flags -> ( Model, Cmd Msg)
+init flags = noCmd (initModel flags)
+
 main =
-  Browser.element
-    { init = initModel >> noCmd
-    , update = update
-    , view = view
-    , subscriptions = subscriptions
-    }
+    Browser.element
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        }

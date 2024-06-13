@@ -4,10 +4,12 @@ import Json.Decode as D
 import Browser.Events exposing (onMouseUp, onMouseMove, onMouseUp)
 import Html.Events exposing (keyCode)
 import Dict exposing (Dict)
+import Diane exposing (Prog)
 import Model exposing (..)
 
 type Msg
-    = Step
+    = Init Flags
+    | Step
     | Eval
     | Undo
     | Reset
@@ -28,6 +30,7 @@ noCmd x = ( x, Cmd.none )
 update_ : Msg -> Model -> Model
 update_ msg =
     case msg of
+        Init flags -> always (initModel flags)
         Step -> step True
         Eval -> eval
         Undo -> undo
@@ -57,7 +60,13 @@ update msg = update_ msg >> noCmd
 
 {- Based on the example: https://github.com/elm/browser/blob/1.0.2/examples/src/Drag.elm -}
 
-port messageReceiver : (String -> msg) -> Sub msg
+type alias Flags =
+    { hasTrace : Bool
+    , adjustable : Bool
+    , program : Prog
+    }
+
+port messageReceiver : (Flags -> msg) -> Sub msg
 
 subscriptions : Model -> Sub Msg
 subscriptions m =
@@ -79,7 +88,7 @@ subscriptions m =
                   , onMouseUp (D.map DragStopY decodeFracY)
                   ]
     in
-    Sub.batch (messageReceiver Change :: draggedX ++ draggedY)
+    Sub.batch (messageReceiver (\f -> (Change f.program)) :: draggedX ++ draggedY)
 
 decodeFracX : D.Decoder Float
 decodeFracX =

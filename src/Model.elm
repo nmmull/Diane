@@ -12,6 +12,8 @@ type alias Model =
     , going : Bool
     , dragX : DragState
     , dragY : DragState
+    , hasTrace : Bool
+    , adjustable : Bool
     }
 
 type DragState
@@ -113,15 +115,17 @@ initConfig prog =
     , env = emptyEnv
     }
 
-initModel prog =
-    { config = initConfig prog
-    , programCopy = prog
+initModel flags =
+    { config = initConfig flags.program
+    , programCopy = flags.program
     , going = False
-    , savedProgram = prog
+    , savedProgram = flags.program
     , trace = []
     , history = []
     , dragX = Static 0.5
     , dragY = Static 0.7
+    , hasTrace = flags.hasTrace
+    , adjustable = flags.adjustable
     }
 
 fracX : Model -> Float

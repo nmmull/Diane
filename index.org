@@ -1,0 +1,508 @@
+#+title: Diane (UNDER CONSTRUCTION)
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="indexStyle.css" />
+#+HTML_HEAD: <script src="diane.js"></script>
+#+OPTIONS: html-style:nil H:2 num:nil
+
+Diane is a *toy stack-oriented language with dynamic scoping*.  It's
+not pretty or all that interesting, but it's simple enough to present
+the syntax and semantics in a straightforward way (and to build a
+reasonable playground for it).
+
+Diane was born out of a need to visualize evaluation.  During the 2024
+spring semester at Boston University, I co-taught a course on
+programming languages in which we used stack-oriented languages as a
+basis for studying operational semantics.  I worked through
+evaulations step-by-step on the board often enough for me to want a
+tool to make the process /automatic/ and /interactive/, along the same
+lines as the [[https://pythontutor.com/cp/composingprograms.html#mode=edit][Python Tutor]] for [[https://www.composingprograms.com][Composing Programs]].
+
+*Disclaimer.* This page is not a tutorial, just a description of
+the language and playground.
+
+* The Playground
+The primary goal of this project was to build a [[file:playground.html][playground]] for toying
+with Diane programs.  It consists of an editor window for writing
+programs, a visualization window for seeing how the stack and
+environment change over the course of evaluation, and a console window
+for seeing intermediate print statements and error messages.
+
+The playground can also be embedded:
+#+BEGIN_EXPORT html
+  <div id="embed-example"></div>
+  <script>
+  var app = Elm.Main.init({
+  node: document.getElementById('embed-example'),
+  flags: {
+  hasTrace: true,
+  adjustable: false,
+  program: `def SUMSQUARES {
+   dup * swap dup * +
+  }
+  2 3 #SUMSQUARES @X
+  X print
+
+  !SUMSQUARES !X`
+  }});
+  </script>
+#+END_EXPORT
+We take advantage of this below to highlight features of the
+semantics.
+
+Partly out of laziness, partly out of a general bent towards minimal
+interfaces, there are no instructions for using the playground within
+the playground itself, so I've included them here.
+** Instructions
++ The *step* button consumes a single command of the program in the
+  editor window and updates the stack and environment accordingly.
++ The *run* button consumes as much of the program as possible until
+  + the entire program is consumed
+  + there is an error
+  + the evaluation has taken 10,000 steps (an arbitrary cut-off).
++ The *undo* button reverses a step taking by pressing either the
+  *step* button or the *run*.
++ The *reset* button resets the program state to its initial state,
+  clearing the undo history.
++ The *save* button sets the program in the editor window to be the
+  program in the initial program state. This also clears the undo
+  history.[fn:: Note that this only saves the program, not the whole
+  program state.  When reseting, the stack and environment will be
+  empty, but the inital program will be the most recently saved
+  program]
++ The *clear* button in the console window clears the messages printed
+  there.[fn:: This cannot be undone.]
+
+** Keyboard Shortcuts
+It is possible to step through a program while writing it using the
+following keyboard shortcuts.  In most cases you can also hold down
+the key to rapidly step through a program, providing a make-shift
+animation mechanism.
+
+  | key | button |
+  |-----+--------|
+  | \   | step   |
+  |-----+--------|
+  | alt | run    |
+  |-----+--------|
+  | `   | undo   |
+  |-----+--------|
+
+* Syntax
+The following is a simple [[https://en.wikipedia.org/wiki/Extended_Backus–Naur_form][EBNF Grammar]] describing a Diane program.  In
+short, a program is a sequence of commands.
+
+-----
+
+#+begin_src
+  <program>  ::= { <command> }
+  <body>     ::= '{' <program> '}'
+  <command>  ::= <int> | 'drop' | 'swap' | 'dup' | 'rot'
+               | '+' | '-' | '*' | '/' | '%' | '=' | '<'
+               | '?' <body> 'else' <body> | 'while' <body> 'do' <body>
+               | 'def' <ident> <body> | '#' <ident>
+               | '@' <ident> | '!' <ident>
+  <int>      ::= ℤ
+  <ident>    ::= ALLCAPS
+#+end_src
+
+-----
+
+* Semantics
+We take a *value* to be a integer (ℤ) or a program (ℙ) representing a
+subroutine.[fn:: In other word, the set of values is ℤ ∪ ℙ.] A
+*configuration*, written ( S, E, P ), is made up of a stack of
+integers (S), an environment consisting of identifier-value (E), and a
+program as given by the above grammar (P).  The [[https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics][small-step/structural
+operational semantics]] of Diane are given by the reduction rules
+below.
+
+*Notation.* We write E[X ↦ A] to mean the environment E but with X
+bound to the value A. We write X ∈ E to mean X is bound in E.  We
+write E[X] for the value to which X is bound in E.  We write E/X for E
+but with any binding of X removed.
+
+** Stack Manipulation
+Several commands are dedicated to manipulating values on the
+stack. We can
++ *push* an integer onto the stack
++ *drop* the top element off the stack
++ *swap* the top two elements on the stack
++ *dup*-licate the top element on the stack
++ *rot*-ate the top three elements on the stack
+In the case that there aren't enough integers on the stack to perform
+a given operation, a stack underflow error message is printed to the
+console.
+
+There is also an unofficial command for *print*-ing the top element of
+the stack and removing it.  See the example below.[fn:: It's
+unofficial because the printed values are not a part of a
+configuration.  Semantically, *print* is identical to *drop*.]
+
+#+begin_src
+
+                 𝑘 ∈ ℤ
+  ────────────────────────────────── ( push )
+  ( S, E, k P ) ⟶ ( 𝑘 :: S, E, P )
+
+
+  ───────────────────────────────────── ( drop )
+  ( 𝑛 :: S, E, drop P ) ⟶ ( S, E, P )
+
+
+  ─────────────────────────────────── ( dropErr )
+  ( ⊥, E, drop P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────────────────────────── ( swap )
+  ( 𝑚 :: 𝑛 :: S, E, swap P) ⟶ ( 𝑛 :: 𝑚 :: S, E, P )
+
+
+  ──────────────────────────────────────── ( swapErr₁ )
+  ( 𝑛 :: ⊥, E, swap P ) ⟶ StackUnderflow
+
+
+  ─────────────────────────────────── ( swapErr₀ )
+  ( ⊥, E, swap P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────────────────────────── ( dup )
+  ( 𝑛 :: S, E, dup P ) ⟶ ( 𝑛 :: 𝑛 :: S, E, P )
+
+
+  ─────────────────────────────────── ( dupErr₀ )
+  ( ⊥, E, dup P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────────────────────────────────── ( rot )
+  ( 𝑙 :: 𝑚 :: 𝑛 :: S, E, rot P ) ⟶ ( 𝑚 :: 𝑛 :: 𝑙 :: S, E, P )
+
+
+  ──────────────────────────────────────────── ( rotErr₂ )
+  ( 𝑚 :: 𝑛 :: S, E, rot P ) ⟶ StackUnderflow
+
+
+  ─────────────────────────────────────── ( rotErr₁ )
+  ( 𝑛 :: ⊥, E, rot P ) ⟶ StackUnderflow
+
+
+  ─────────────────────────────────── ( rotErr₀ )
+  ( ⊥, E, rot P ) ⟶ StackUnderflow
+
+#+end_src
+
+This is a small example program using these commands.  Press the
+*step* button to see how the stack changes as each command is consumed
+and evaluated.  Note that the last command cannot be consumed because
+there are no integers on the stack to print.  Attempting to consume it
+results in a stack underflow error message.
+
+#+BEGIN_EXPORT html
+  <div id="push-example"></div>
+  <script>
+  var app = Elm.Main.init({
+  node: document.getElementById('push-example'),
+  flags: {
+  hasTrace: true,
+  adjustable: false,
+  program: `1 2 3
+  drop swap dup
+  rot rot rot
+  print print print print`
+  }});
+  </script>
+#+END_EXPORT
+
+** Arithmetic and Comparisons
+The next set of commands are used to operate on the integers on the
+stack.  We can
++ (+) add
++ (-) subtract
++ (*) multiply
++ (/) divide
++ (%) determine the modulus
++ (=) check for equality
++ (<) check for less-than
+As above, in the case that there aren't enough integers on the stack
+to perform a given operation, a stack underflow error message is
+printed to the trace.  Errors may also occur when trying to divide by
+zero.
+#+begin_src
+
+  ────────────────────────────────────────────────── ( add )
+  ( 𝑚 :: 𝑛 :: S, E, + P ) ⟶ ( 𝑚 ＋ 𝑛 :: S, E, P )
+
+
+  ───────────────────────────────────── ( addErr₁ )
+  ( 𝑛 :: ⊥, E, + P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────── ( addErr₀ )
+  ( ⊥, E, - P ) ⟶ StackUnderflow
+
+
+    ─────────────────────────────────────────────── ( sub )
+  ( 𝑚 :: 𝑛 :: S, E, - P ) ⟶ ( 𝑚 ─ 𝑛 :: S, E, P )
+
+
+  ───────────────────────────────────── ( subErr₁ )
+  ( 𝑛 :: ⊥, E, - P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────── ( subErr₀ )
+  ( ⊥, E, - P ) ⟶ StackUnderflow
+
+
+  ───────────────────────────────────────────────── ( mul )
+  ( 𝑚 :: 𝑛 :: S, E, * P ) ⟶ ( 𝑚 × 𝑛 :: S, E, P )
+
+
+  ───────────────────────────────────── ( mulErr₁ )
+  ( 𝑛 :: ⊥, E, * P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────── ( mulErr₀ )
+  ( ⊥, E, * P ) ⟶ StackUnderflow
+
+
+                         n ≠ 0
+  ────────────────────────────────────────────────── ( div )
+  ( 𝑚 :: 𝑛 :: S, E, / P ) ⟶ ( 𝑚 ／ 𝑛 :: S, E, P )
+
+
+  ────────────────────────────────────── ( div )
+  ( 𝑚 :: 0 :: S, E, / P ) ⟶ DivByZero
+
+
+  ───────────────────────────────────── ( divErr₁ )
+  ( 𝑛 :: ⊥, E, / P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────── ( divErr₀ )
+  ( ⊥, E, / P ) ⟶ StackUnderflow
+
+
+  ─────────────────────────────────────────────────── ( mod )
+  ( 𝑚 :: 𝑛 :: S, E, % P ) ⟶ ( 𝑚 mod 𝑛 :: S, E, P )
+
+
+  ────────────────────────────────────── ( div )
+  ( 𝑚 :: 0 :: S, E, % P ) ⟶ DivByZero
+
+
+  ───────────────────────────────────── ( modErr₁ )
+  ( 𝑛 :: ⊥, E, % P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────── ( modErr₀ )
+  ( ⊥, E, % P ) ⟶ StackUnderflow
+
+
+                     𝑚 ＝ 𝑛
+  ──────────────────────────────────────────── ( eq )
+  ( 𝑚 :: 𝑛 :: S, E, = P ) ⟶ ( 1 :: S, E, P )
+
+
+                     𝑚 ≠ 𝑛
+  ──────────────────────────────────────────── ( neq )
+  ( 𝑚 :: 𝑛 :: S, E, = P ) ⟶ ( 0 :: S, E, P )
+
+
+  ───────────────────────────────────── ( eqErr₁ )
+  ( 𝑛 :: ⊥, E, = P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────── ( eqErr₀ )
+  ( ⊥, E, = P ) ⟶ StackUnderflow
+
+                     𝑚 < 𝑛
+  ──────────────────────────────────────────── ( le )
+  ( 𝑚 :: 𝑛 :: S, E, < P ) ⟶ ( 1 :: S, E, P )
+
+
+                     𝑚 ≮ 𝑛
+  ──────────────────────────────────────────── ( nle )
+  ( 𝑚 :: 𝑛 :: S, E, = P ) ⟶ ( 0 :: S, E, P )
+
+
+  ───────────────────────────────────── ( leErr₁ )
+  ( 𝑛 :: ⊥, E, = P ) ⟶ StackUnderflow
+
+
+  ──────────────────────────────── ( leErr₀ )
+  ( ⊥, E, = P ) ⟶ StackUnderflow
+
+#+end_src
+
+#+BEGIN_EXPORT html
+  <div id="arith-example"></div>
+  <script>
+  var app = Elm.Main.init({
+  node: document.getElementById('arith-example'),
+  flags: {
+  hasTrace: true,
+  adjustable: false,
+  program: `3 4 5 + * 4 swap / 7 < 5 /`
+  }});
+  </script>
+#+END_EXPORT
+** Subroutines
+A subroutine is just a named program.  We can /define/ subroutines and
+/call/ them.  Defining a subroutine adds a binding in the environment
+of its name to the program in the body of its definition. Calling a
+subroutine simply prepends its body to the program being
+evaluated.[fn:: Its truly amazing to me how simple this is.]
+#+begin_src
+
+  ────────────────────────────────────────────── ( def )
+  ( S, E, def F { Q } P ) ⟶ ( S, E[F ↦ Q], P )
+
+
+    F ∈ E                  E[X] ∈ ℙ
+  ─────────────────────────────────── ( call )
+  ( S, E, #F P ) ⟶ ( S, E, E[F] P )
+
+
+    F ∈ E             E[X] ∉ ℙ
+  ────────────────────────────── ( callErr₁ )
+  ( S, E, #F P ) ⟶ InvalidCall
+
+
+                  F ∉ E
+  ────────────────────────────────── ( callErr₀ )
+  ( S, E, #F P ) ⟶ UnknownVariable
+
+#+end_src
+
+#+BEGIN_EXPORT html
+  <div id="arith-example"></div>
+  <script>
+  var app = Elm.Main.init({
+  node: document.getElementById('arith-example'),
+  flags: {
+  hasTrace: true,
+  adjustable: false,
+  program: `def INCR {
+   1 +
+  }
+
+  2 #INCR
+  5 #INCR #INCR
+
+  def DUPTWO {
+   swap
+   dup rot
+   dup rot
+   swap
+  }
+
+  #DUPTWO`
+  }});
+  </script>
+#+END_EXPORT
+** Variables
+A variable is just a named integer. We can
++ /assign/ an integer to a variable, which adding a binding of that
+  variable to its new value in the environment
++ /free/ a variable, removing its binding from environment (in case we
+  want to make sure it isn't accidentally referred to later on in the
+  program)
++ /lookup/ a variable binding in the environment (by just typing the variable itself)
+#+begin_src
+
+  ────────────────────────────────────────── ( assign )
+  ( 𝑛 :: S, E, @X P ) ⟶ ( S, E[X ↦ 𝑛], P )
+
+
+  ───────────────────────────────── ( assignErr₀ )
+  ( ⊥, E, @X P ) ⟶ StackUnderflow
+
+
+                 X ∈ E
+  ────────────────────────────────── ( call )
+  ( S, E, !X P ) ⟶ ( S, E/X, P )
+
+
+                 X ∉ E
+  ────────────────────────────────── ( call )
+  ( S, E, !X P ) ⟶ UnknownVariable
+
+
+    X ∈ E                    E[X] ∈ ℤ
+  ───────────────────────────────────── ( lookup )
+  ( S, E, X P ) ⟶ ( E[X] :: S, E, P )
+
+
+    X ∈ E              E[X] ∉ ℤ
+  ─────────────────────────────── ( lookupErr₁ )
+  ( S, E, X P ) ⟶ InvalidLookup
+
+
+                 X ∉ E
+  ───────────────────────────────── ( call )
+  ( S, E, X P ) ⟶ UnknownVariable
+
+#+end_src
+
+#+BEGIN_EXPORT html
+  <div id="arith-example"></div>
+  <script>
+  var app = Elm.Main.init({
+  node: document.getElementById('arith-example'),
+  flags: {
+  hasTrace: true,
+  adjustable: false,
+  program: `1 @X
+  2 @Y
+  3 @X
+  X Y + @Z
+  !X !Y !Z`
+  }});
+  </script>
+#+END_EXPORT
+** Conditionals
+Finally, there are if-statements for conditional reasoning.  We also
+include while-loops with the usual semantics.
+#+begin_src
+
+                           𝑛 ≠ 0
+  ─────────────────────────────────────────────────────── ( ifTrue )
+  ( 𝑛 :: S, E, ? { Q₁ } else { Q₂ } P ) ⟶ ( S, E, Q₂ P )
+
+
+  ──────────────────────────────────────────────────────── ( ifFalse )
+  ( 0 :: S, E, ? { Q₁ } else { Q₂ } P ) ⟶ ( S, E, Q₁ P )
+
+
+  ─────────────────────────────────────────────────── ( ifErr₀ )
+  ( ⊥, E, ? { Q₁ } else { Q₂ } P ) ⟶ StackUnderflow
+
+
+  ─────────────────────────────────────────────────────── ( while )
+  ( S, E, while { Q₁ } do { Q₂ } P ) ⟶
+  ( S, E, Q₁ ? { Q₂ while { Q₁ } do { Q₂ } } else { } P )
+
+#+end_src
+
+#+BEGIN_EXPORT html
+  <div id="cond-example"></div>
+  <script>
+  var app = Elm.Main.init({
+  node: document.getElementById('cond-example'),
+  flags: {
+  hasTrace: true,
+  adjustable: false,
+  program: `0 @N
+
+  N 5 = ? {
+   24 print
+  } else {
+   37 print
+  }
+
+  while { 5 N < } do {
+   N print
+   1 N + @N
+  }
+  !N`
+  }});
+  </script>
+#+END_EXPORT
