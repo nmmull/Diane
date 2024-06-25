@@ -77,7 +77,7 @@ read m =
     then m
     else
         let c = m.config in
-        { m | history = { c | program = m.savedProgram } :: m.history }
+        { m | history = { c | program = m.programCopy } :: m.history }
 
 stop m = { m | going = False }
 start m = { m | going = True }

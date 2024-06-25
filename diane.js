@@ -5950,7 +5950,7 @@ var $author$project$Model$read = function (m) {
 					$elm$core$List$cons,
 					_Utils_update(
 						c,
-						{program: m.savedProgram}),
+						{program: m.programCopy}),
 					m.history)
 			});
 	}
