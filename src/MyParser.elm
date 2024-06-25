@@ -5,13 +5,13 @@ import Parser exposing (..)
 import Set
 
 unconsumed : Parser String
-unconsumed = getChompedString (chompWhile (\_ -> True))
+unconsumed = map String.trimRight (getChompedString (chompWhile (\_ -> True)))
 
 parseIdent : Parser Ident
 parseIdent = variable
-  { start = Char.isUpper
-  , inner = Char.isUpper
-  , reserved = Set.fromList ["TOP"]
+  { start = \c -> Char.isUpper c || c == '_'
+  , inner = \c -> Char.isUpper c || c == '_'
+  , reserved = Set.fromList []
   }
 
 isSpace c = List.member c [' ', '\n', '\t']

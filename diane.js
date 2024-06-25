@@ -5960,8 +5960,10 @@ var $author$project$Model$start = function (m) {
 		m,
 		{going: true});
 };
+var $elm$core$String$trim = _String_trim;
 var $author$project$Diane$done = function (c) {
-	return $elm$core$String$isEmpty(c.program);
+	return $elm$core$String$isEmpty(
+		$elm$core$String$trim(c.program));
 };
 var $author$project$Diane$commandString = function (c) {
 	switch (c.$) {
@@ -6594,7 +6596,13 @@ var $author$project$Diane$evalCommand = F2(
 			});
 		var mkProg = F2(
 			function (s, p) {
-				return A3(mkr, s, env, p + ('\n' + program));
+				return A3(
+					mkr,
+					s,
+					env,
+					_Utils_ap(
+						p,
+						$elm$core$String$isEmpty(program) ? '' : ('\n' + program)));
 			});
 		var mkEnv = F2(
 			function (s, e) {
@@ -6961,7 +6969,7 @@ var $author$project$Diane$evalCommand = F2(
 					var p1 = _v72.a;
 					var p2 = _v72.b;
 					var s = _v0.b;
-					var _while = p1 + (' ? {\n' + (A2($author$project$Diane$indent, 1, p2) + ('\n while {\n' + (A2($author$project$Diane$indent, 2, p1) + ('\n } do {\n' + (A2($author$project$Diane$indent, 2, p2) + '\n }\n} else { }'))))));
+					var _while = p1 + (' ? {\n' + (A2($author$project$Diane$indent, 2, p2) + ('\n while {\n' + (A2($author$project$Diane$indent, 4, p1) + ('\n } do {\n' + (A2($author$project$Diane$indent, 4, p2) + '\n }\n} else { }'))))));
 					return A2(mkProg, s, _while);
 				case 'Fun':
 					var _v73 = _v0.a;
@@ -7571,7 +7579,6 @@ var $author$project$MyParser$notAllSpace = $elm$core$String$any(
 	function (c) {
 		return !$author$project$MyParser$isSpace(c);
 	});
-var $elm$core$String$trim = _String_trim;
 var $author$project$MyParser$clean = function (s) {
 	var go = function (ls) {
 		go:
@@ -7990,11 +7997,17 @@ var $elm$parser$Parser$variable = function (i) {
 };
 var $author$project$MyParser$parseIdent = $elm$parser$Parser$variable(
 	{
-		inner: $elm$core$Char$isUpper,
-		reserved: $elm$core$Set$fromList(
-			_List_fromArray(
-				['TOP'])),
-		start: $elm$core$Char$isUpper
+		inner: function (c) {
+			return $elm$core$Char$isUpper(c) || _Utils_eq(
+				c,
+				_Utils_chr('_'));
+		},
+		reserved: $elm$core$Set$fromList(_List_Nil),
+		start: function (c) {
+			return $elm$core$Char$isUpper(c) || _Utils_eq(
+				c,
+				_Utils_chr('_'));
+		}
 	});
 var $elm$parser$Parser$Advanced$spaces = $elm$parser$Parser$Advanced$chompWhile(
 	function (c) {
@@ -8264,11 +8277,15 @@ var $elm$parser$Parser$run = F2(
 		}
 	});
 var $elm$parser$Parser$chompWhile = $elm$parser$Parser$Advanced$chompWhile;
-var $author$project$MyParser$unconsumed = $elm$parser$Parser$getChompedString(
-	$elm$parser$Parser$chompWhile(
-		function (_v0) {
-			return true;
-		}));
+var $elm$core$String$trimRight = _String_trimRight;
+var $author$project$MyParser$unconsumed = A2(
+	$elm$parser$Parser$map,
+	$elm$core$String$trimRight,
+	$elm$parser$Parser$getChompedString(
+		$elm$parser$Parser$chompWhile(
+			function (_v0) {
+				return true;
+			})));
 var $author$project$MyParser$parse = function () {
 	var go = A2(
 		$elm$parser$Parser$keeper,
@@ -9021,8 +9038,8 @@ var $author$project$View$viz = function (m) {
 				A2(
 				$elm$html$Html$Attributes$style,
 				'height',
-				$author$project$View$percent(
-					$author$project$Model$fracY(m)))
+				m.hasTrace ? $author$project$View$percent(
+					$author$project$Model$fracY(m)) : '100%')
 			]),
 		_List_fromArray(
 			[

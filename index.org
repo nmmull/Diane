@@ -37,12 +37,10 @@ The playground can also be embedded:
   hasTrace: true,
   adjustable: false,
   program: `def SUMSQUARES {
-   dup * swap dup * +
+    dup * swap dup * +
   }
   2 3 #SUMSQUARES @X
-  X print
-
-  !SUMSQUARES !X`
+  X print`
   }});
   </script>
 #+END_EXPORT
@@ -93,11 +91,11 @@ short, a program is a sequence of whitespace-separated commands.
   <body>     ::= '{' <program> '}'
   <command>  ::= <int> | 'drop' | 'swap' | 'dup' | 'rot'
                | '+' | '-' | '*' | '/' | '%' | '=' | '<'
-               | '?' <body> 'else' <body> | 'while' <body> 'do' <body>
                | 'def' <ident> <body> | '#' <ident>
-               | '@' <ident> | '!' <ident>
+               | '@' <ident> | '[' | ']'
+               | '?' <body> 'else' <body> | 'while' <body> 'do' <body>
   <int>      ::= ℤ
-  <ident>    ::= ALLCAPS
+  <ident>    ::= ALL_CAPS_SNAKE
 #+end_src
 
 -----
@@ -106,15 +104,18 @@ short, a program is a sequence of whitespace-separated commands.
 We take a *value* (𝕍) to be a integer (ℤ) or a program representing a
 subroutine (ℙ).[fn:: In other word, 𝕍 = ℤ ∪ ℙ.] A *configuration*,
 written ( S, E, P ), is made up of a stack of integers (S), an
-environment consisting of identifier-value bindings (E), and a program
-as given by the above grammar (P).  The [[https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics][operational semantics]] of Diane
-are given by the reduction rules below.
+environment consisting of a list of identifier-value bindings (E), and
+a program as given by the above grammar (P).  The [[https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics][operational
+semantics]] of Diane are given by the reduction rules below.
 
 ** Notation for Environments
-| E[X ↦ A] | E but with X bound to the value A  |
-| X ∈ E    | X is bound in E                    |
-| E[X]     | the value to which X is bound in E |
-| E/X      | E with any binding of X removed    |
+| ⟨⟩       | empty scope                                                |
+| G        | global scope                                               |
+| L · E    | E with shadowing local scope L                             |
+| E[X ↦ A] | E with X bound to the value A (in topmost local scope)     |
+| X ∈ E    | X is bound in E                                            |
+| E[X]     | the value to which X is bound in E (searched for top down) |
+| E/X      | E with any binding of X removed                            |
 
 ** Stack Manipulation
 Several commands are dedicated to manipulating the stack. We can
@@ -374,20 +375,20 @@ evaluated.[fn:: Its truly amazing to me how simple this is.]
   var app = Elm.Main.init({
   node: document.getElementById('arith-example'),
   flags: {
-  hasTrace: true,
+  hasTrace: false,
   adjustable: false,
   program: `def INCR {
-   1 +
+    1 +
   }
 
   2 #INCR
   5 #INCR #INCR
 
   def DUPTWO {
-   swap
-   dup rot
-   dup rot
-   swap
+    swap
+    dup rot
+    dup rot
+    swap
   }
 
   #DUPTWO`
@@ -397,10 +398,17 @@ evaluated.[fn:: Its truly amazing to me how simple this is.]
 ** Variables
 A variable is just a named integer. We can
 + /assign/ an integer to a variable, which adds a binding to the environment
-+ /free/ a variable, removing its binding from the environment[fn::
-  This is useful if we want to make sure it isn't accidentally
-  referred to later on in the program.]
 + /lookup/ a variable binding in the environment (by typing the variable itself)
+
+Variables bindings are available within /blocks/.  Local blocks can be
+opened and closed via using the delimiters '[' and ']',
+respectively.[fn:: Note that they aren't actually delimiters. It's
+possible to write program which opens more blocks than it closes. ]
+Bindings created within a local block are available only within the
+evaluation of that block.  Bindings not created within a local block
+are in the global block and are available anywhere in the program
+after they've been created.
+
 #+begin_src
 
   ────────────────────────────────────────── ( assign )
@@ -409,16 +417,6 @@ A variable is just a named integer. We can
 
   ───────────────────────────────── ( assignErr₀ )
   ( ⊥, E, @X P ) ⟶ StackUnderflow
-
-
-                 X ∈ E
-  ────────────────────────────────── ( call )
-  ( S, E, !X P ) ⟶ ( S, E/X, P )
-
-
-                 X ∉ E
-  ────────────────────────────────── ( call )
-  ( S, E, !X P ) ⟶ UnknownVariable
 
 
     X ∈ E                    E[X] ∈ ℤ
@@ -432,8 +430,20 @@ A variable is just a named integer. We can
 
 
                  X ∉ E
-  ───────────────────────────────── ( call )
+  ───────────────────────────────── ( lookupErr₂ )
   ( S, E, X P ) ⟶ UnknownVariable
+
+
+  ────────────────────────────────── ( openLocal )
+  ( S, E, [ P ) ⟶ ( S, ⟨⟩ · E, P )
+
+
+  ───────────────────────────────── ( closeLocal )
+  ( S, L · E, ] P ) ⟶ ( S, E, P )
+
+
+  ───────────────────────────── ( closeLocalErr )
+  ( S, G, ] P ) ⟶ GlobalClose
 
 #+end_src
 
@@ -443,16 +453,23 @@ A variable is just a named integer. We can
   var app = Elm.Main.init({
   node: document.getElementById('arith-example'),
   flags: {
-  hasTrace: true,
+  hasTrace: false,
   adjustable: false,
   program: `1 @X
-  2 @Y
-  3 @X
-  X Y + @Z
-  !X !Y !Z`
+  X 1 + @Y
+
+  [
+    X Y
+    10 @X
+    X 10 + @Y
+    X Y
+  ]
+
+  X Y`
   }});
   </script>
 #+END_EXPORT
+
 ** Conditionals
 Finally, there are if-statements for conditional reasoning.  We also
 include while-loops with the usual semantics (i.e., defined in terms of if-statements).
@@ -488,16 +505,15 @@ include while-loops with the usual semantics (i.e., defined in terms of if-state
   program: `0 @N
 
   N 5 = ? {
-   24 print
+    24 print
   } else {
-   37 print
+    37 print
   }
 
   while { 5 N < } do {
-   N print
-   1 N + @N
-  }
-  !N`
+    N print
+    1 N + @N
+  }`
   }});
   </script>
 #+END_EXPORT

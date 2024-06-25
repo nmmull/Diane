@@ -125,7 +125,7 @@ viz m =
         [ id "viz-window"
         , style "pointer-events" (pEventY m)
         , style "user-select" (pEventY m)
-        , style "height" (percent (fracY m))
+        , style "height" (if m.hasTrace then percent (fracY m) else "100%")
         ]
         [ div [ id "viz" ]
             [ Html.h3 [] [ text "Stack" ]

@@ -164,7 +164,7 @@ evalCommand com ({stack, program, env} as config) =
   let mk s = mkr s env program in
   let mkBool b s = mk (if b then 1 :: s else 0 :: s) in
   let mkTrace s msg = Ok ( { config | stack = s }, Just msg ) in
-  let mkProg s p = mkr s env (p ++ "\n" ++ program) in
+  let mkProg s p = mkr s env (p ++ if String.isEmpty program then "" else "\n" ++ program) in
   let mkEnv s e = mkr s e program in
   case ( com, stack ) of
     ( Push n, s ) -> mk (n :: s)
@@ -200,11 +200,11 @@ evalCommand com ({stack, program, env} as config) =
             while =
                 p1
                 ++ " ? {\n"
-                ++ indent 1 p2
-                ++ "\n while {\n"
-                ++ indent 2 p1
-                ++ "\n } do {\n"
                 ++ indent 2 p2
+                ++ "\n while {\n"
+                ++ indent 4 p1
+                ++ "\n } do {\n"
+                ++ indent 4 p2
                 ++ "\n }\n} else { }"
         in
         mkProg s while
@@ -235,4 +235,4 @@ evalCommand com ({stack, program, env} as config) =
     _ -> Err (StackUnderflow com)
 
 done : Config -> Bool
-done c = String.isEmpty c.program
+done c = String.isEmpty (String.trim c.program)

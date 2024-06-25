@@ -15,17 +15,49 @@
 					hasTrace: true,
 					adjustable: true,
 					program: `def FIB {
- dup 1 >= ? {
- } else {
-  dup 1 swap - #FIB
-  swap 2 swap - #FIB
-  +
- }
+  dup 2 swap < ? {
+  } else {
+    dup 1 swap - #FIB
+    swap 2 swap - #FIB
+    +
+  }
 }
 
-6 #FIB
-7 #FIB
-8 #FIB`
+4 #FIB
+
+def FIB_AGAIN {[
+  def LTE {[ @M @N
+    N M <
+    N M =
+    +
+  ]}
+  def GO {[ @N
+    1 N #LTE ? {
+      N
+    } else {
+      1 N - #GO @X
+      2 N - #GO @Y
+      X Y +
+    }
+  ]}
+  #GO
+]}
+
+4 #FIB_AGAIN
+
+def FIB_FAST {[ @N
+  0 @CURR
+  1 @NEXT
+  while { N 0 < } do {
+    CURR NEXT +
+    NEXT @CURR
+    @NEXT
+    1 N - @N
+  }
+  CURR
+]}
+
+4 #FIB_FAST`
 			}
 	});
   </script>
