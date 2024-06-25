@@ -95,6 +95,8 @@ parseCommand = oneOf
   , succeed Div   |. keyword "/"
   , succeed Mod   |. keyword "%"
   , succeed Eq    |. keyword "="
+  , succeed OpenLocal |. keyword "["
+  , succeed CloseLocal |. keyword "]"
   , backtrackable (succeed Gte   |. keyword ">=")
   , succeed Gt    |. keyword ">"
   , backtrackable (succeed Neq   |. keyword "<>")

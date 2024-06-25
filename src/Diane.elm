@@ -22,6 +22,7 @@ type Command
   | If Prog Prog | While Prog Prog
   | Fun Ident Prog | Call Ident
   | Lookup Ident | Assign Ident | Unassign Ident
+  | OpenLocal | CloseLocal
 
 commandString : Command -> String
 commandString c =
@@ -55,6 +56,8 @@ commandString c =
         Lookup name -> "(lookup) " ++ name
         Assign name -> "@" ++ name
         Unassign name -> "!" ++ name
+        OpenLocal -> "["
+        CloseLocal -> "]"
 
 -- ERRORS
 
@@ -64,6 +67,7 @@ type Error
   | InvalidCall Ident
   | InvalidLookup Ident
   | DivByZero
+  | CloseGlobal
 
 mkErrMsg : String -> String
 mkErrMsg s = "ERROR: " ++ s ++ "."
@@ -78,6 +82,7 @@ errMsg e =
         InvalidCall ident -> "Invalid call, '" ++ ident ++ "' is not a subroutine"
         InvalidLookup ident -> "Invalid lookup, '" ++ ident ++ "' is not an integer"
         DivByZero -> "Division by 0"
+        CloseGlobal -> "Attempted to close global scope"
   in mkErrMsg m
 
 -- VALUES
@@ -94,15 +99,36 @@ valString v =
 
 -- ENVIRONMENTS
 
-type alias Env = Dict Ident Value
+type alias Bindings = Dict Ident Value
 
-assign = Dict.insert
-unassign = Dict.remove
-lookup = Dict.get
-emptyEnv = Dict.empty
+assignBindings = Dict.insert
+unassignBindings = Dict.remove
+lookupBindings = Dict.get
+emptyBindings = Dict.empty
 
-envString : Env -> String
-envString e =
+type Env
+    = Global Bindings
+    | Local Bindings Env
+
+mapBindings f e =
+    case e of
+        Global bs -> Global (f bs)
+        Local bs env -> Local (f bs) env
+
+assign x v e = mapBindings (assignBindings x v) e
+unassign x e = mapBindings (unassignBindings x) e
+lookup x e =
+    case e of
+        Global bs -> lookupBindings x bs
+        Local bs rest -> case lookupBindings x bs of
+            Nothing -> lookup x rest
+            Just v -> Just v
+
+emptyEnv = Global emptyBindings
+emptyLocal = Local emptyBindings
+
+bindingsString : Bindings -> String
+bindingsString e =
   let
     go bs =
       case bs of
@@ -110,6 +136,12 @@ envString e =
         (x, val) :: rest -> (x ++ " ↦ " ++ valString val) :: go rest
   in
   String.join "\n" (go (Dict.toList e))
+
+envToList : Env -> List Bindings
+envToList e =
+    case e of
+        Global bs -> [bs]
+        Local bs rest -> bs :: envToList rest
 
 -- CONFIGURATIONS
 
@@ -160,40 +192,46 @@ evalCommand com ({stack, program, env} as config) =
     ( Gt, x :: y :: s ) -> mkBool (x > y) s
     ( Gte, x :: y :: s ) -> mkBool (x >= y) s
     ( If p1 p2, x :: s ) ->
-      if x == 0
-      then mkProg s p2
-      else mkProg s p1
+        if x == 0
+        then mkProg s p2
+        else mkProg s p1
     ( While p1 p2, s ) ->
-      let
-        while =
-          p1
-          ++ " ? {\n"
-          ++ indent 1 p2
-          ++ "\n while {\n"
-          ++ indent 2 p1
-          ++ "\n } do {\n"
-          ++ indent 2 p2
-          ++ "\n }\n} else { }"
-      in
-      mkProg s while
+        let
+            while =
+                p1
+                ++ " ? {\n"
+                ++ indent 1 p2
+                ++ "\n while {\n"
+                ++ indent 2 p1
+                ++ "\n } do {\n"
+                ++ indent 2 p2
+                ++ "\n }\n} else { }"
+        in
+        mkProg s while
     ( Fun name body, s ) ->
       mkEnv s (assign name (Subroutine body) env)
     ( Call id, s ) ->
-      case lookup id config.env of
-          Nothing -> Err (UnknownVariable id)
-          Just (Subroutine body) -> mkProg s body
-          Just _ -> Err (InvalidCall id)
+        case lookup id config.env of
+            Nothing -> Err (UnknownVariable id)
+            Just (Subroutine body) -> mkProg s body
+            Just _ -> Err (InvalidCall id)
     ( Lookup id, s ) ->
-      case lookup id config.env of
-          Nothing -> Err (UnknownVariable id)
-          Just (Number n) -> mk (n :: s)
-          Just _ -> Err (InvalidLookup id)
+        case lookup id config.env of
+            Nothing -> Err (UnknownVariable id)
+            Just (Number n) -> mk (n :: s)
+            Just _ -> Err (InvalidLookup id)
     ( Assign id, x :: s ) ->
       mkEnv s (assign id (Number x) env)
     ( Unassign id, s ) ->
-      case lookup id config.env of
+        case lookup id config.env of
             Nothing -> Err (UnknownVariable id)
             _ -> mkEnv s (unassign id env)
+    ( OpenLocal, s ) ->
+        mkEnv s (emptyLocal env)
+    ( CloseLocal, s ) ->
+        case env of
+          Global _ -> Err CloseGlobal
+          Local _ e -> mkEnv s e
     _ -> Err (StackUnderflow com)
 
 done : Config -> Bool

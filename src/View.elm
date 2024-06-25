@@ -105,9 +105,19 @@ bindHtml (name, val) =
         Number v -> intHtml name v
         Subroutine f -> funHtml name f
 
+bindsHtmls : Bindings -> List (Html Msg)
+bindsHtmls bs =
+    List.map (\b -> Html.li [] [ bindHtml b ]) (Dict.toList bs)
+
 envHtmls : Env -> List (Html Msg)
 envHtmls e =
-    List.map bindHtml (Dict.toList e)
+    List.map (\bs -> Html.ul [] (bindsHtmls bs)) (List.reverse (envToList e))
+
+header : Int -> Html Msg
+header i =
+    case i of
+        0 -> Html.b [] [ text "GLOBAL" ]
+        _ -> Html.b [] [ text ("LOCAL " ++ String.fromInt i) ]
 
 viz : Model -> Html Msg
 viz m =
@@ -121,7 +131,7 @@ viz m =
             [ Html.h3 [] [ text "Stack" ]
             , div [] [ text (stackStr m.config.stack) ]
             , Html.h3 [] [ text "Environment" ]
-            , Html.ul [] (List.map (\x -> Html.li [] [ x ]) (envHtmls m.config.env))
+            , Html.ul [] (List.indexedMap (\i x -> Html.li [] [ header i, x ]) (envHtmls m.config.env))
             ]
         -- , button
         --     [ id "clear-data"
