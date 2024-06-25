@@ -104,15 +104,16 @@ short, a program is a sequence of whitespace-separated commands.
 We take a *value* (𝕍) to be a integer (ℤ) or a program representing a
 subroutine (ℙ).[fn:: In other word, 𝕍 = ℤ ∪ ℙ.] A *configuration*,
 written ( S, E, P ), is made up of a stack of integers (S), an
-environment consisting of a list of identifier-value bindings (E), and
-a program as given by the above grammar (P).  The [[https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics][operational
-semantics]] of Diane are given by the reduction rules below.
+environment consisting of a list of collections identifier-value
+bindings (E), and a program as given by the above
+grammar (P).  The [[https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics][operational semantics]] of Diane are given by the
+reduction rules below.
 
 ** Notation for Environments
-| ⟨⟩       | empty scope                                                |
-| G        | global scope                                               |
-| L · E    | E with shadowing local scope L                             |
-| E[X ↦ A] | E with X bound to the value A (in topmost local scope)     |
+| ⟨⟩       | empty collection of bindings                               |
+| 𝒢        | global bindings                                            |
+| L · E    | E with (shadowing) local bindings L                        |
+| E[X ↦ A] | E with X bound to the value A (in topmost local bindings)  |
 | X ∈ E    | X is bound in E                                            |
 | E[X]     | the value to which X is bound in E (searched for top down) |
 | E/X      | E with any binding of X removed                            |
@@ -400,14 +401,13 @@ A variable is just a named integer. We can
 + /assign/ an integer to a variable, which adds a binding to the environment
 + /lookup/ a variable binding in the environment (by typing the variable itself)
 
-Variables bindings are available within /blocks/.  Local blocks can be
-opened and closed via using the delimiters '[' and ']',
+Variables bindings are available within /blocks/ (or globally).  Local
+blocks can be opened and closed using the delimiters '[' and ']',
 respectively.[fn:: Note that they aren't actually delimiters. It's
 possible to write program which opens more blocks than it closes. ]
 Bindings created within a local block are available only within the
 evaluation of that block.  Bindings not created within a local block
-are in the global block and are available anywhere in the program
-after they've been created.
+are available anywhere in the program after they've been created.
 
 #+begin_src
 
@@ -443,7 +443,7 @@ after they've been created.
 
 
   ───────────────────────────── ( closeLocalErr )
-  ( S, G, ] P ) ⟶ GlobalClose
+  ( S, 𝒢, ] P ) ⟶ GlobalClose
 
 #+end_src
 

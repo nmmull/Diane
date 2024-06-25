@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2024-06-25 Tue 18:00 -->
+<!-- 2024-06-25 Tue 19:30 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Diane</title>
@@ -19,21 +19,21 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org5d64802">The Playground</a>
+<li><a href="#orgaa5ccda">The Playground</a>
 <ul>
-<li><a href="#org165b843">Instructions</a></li>
-<li><a href="#org7d5c075">Keyboard Shortcuts</a></li>
+<li><a href="#org333ad0d">Instructions</a></li>
+<li><a href="#org4264913">Keyboard Shortcuts</a></li>
 </ul>
 </li>
-<li><a href="#org1577087">Syntax</a></li>
-<li><a href="#org2e78dbe">Semantics</a>
+<li><a href="#org6c25255">Syntax</a></li>
+<li><a href="#orgaf554bf">Semantics</a>
 <ul>
-<li><a href="#org6374a19">Notation for Environments</a></li>
-<li><a href="#org8a4f05a">Stack Manipulation</a></li>
-<li><a href="#orgcb7184c">Arithmetic and Comparisons</a></li>
-<li><a href="#orgf117095">Subroutines</a></li>
-<li><a href="#orgbcfba48">Variables</a></li>
-<li><a href="#org9f70979">Conditionals</a></li>
+<li><a href="#orgf3e6779">Notation for Environments</a></li>
+<li><a href="#org0e806ae">Stack Manipulation</a></li>
+<li><a href="#orgea6df44">Arithmetic and Comparisons</a></li>
+<li><a href="#org8301bf3">Subroutines</a></li>
+<li><a href="#org27cdfbd">Variables</a></li>
+<li><a href="#org87fb8f8">Conditionals</a></li>
 </ul>
 </li>
 </ul>
@@ -61,9 +61,9 @@ Programs</a>.
 the language and playground.
 </p>
 
-<div id="outline-container-org5d64802" class="outline-2">
-<h2 id="org5d64802">The Playground</h2>
-<div class="outline-text-2" id="text-org5d64802">
+<div id="outline-container-orgaa5ccda" class="outline-2">
+<h2 id="orgaa5ccda">The Playground</h2>
+<div class="outline-text-2" id="text-orgaa5ccda">
 <p>
 The primary goal of this project was to build a <a href="playground.html">playground</a> (in <a href="https://elm-lang.org">Elm</a>)
 for toying with Diane programs.  The playground consists of an editor
@@ -101,9 +101,9 @@ interfaces, there are no instructions for using the playground
 <i>within</i> the playground itself, so I've included them here.
 </p>
 </div>
-<div id="outline-container-org165b843" class="outline-3">
-<h3 id="org165b843">Instructions</h3>
-<div class="outline-text-3" id="text-org165b843">
+<div id="outline-container-org333ad0d" class="outline-3">
+<h3 id="org333ad0d">Instructions</h3>
+<div class="outline-text-3" id="text-org333ad0d">
 <ul class="org-ul">
 <li>The <b>step</b> button consumes a single command of the program in the
 editor window and updates the stack and environment accordingly.</li>
@@ -126,9 +126,9 @@ there.<sup><a id="fnr.2" class="footref" href="#fn.2" role="doc-backlink">2</a><
 </div>
 </div>
 
-<div id="outline-container-org7d5c075" class="outline-3">
-<h3 id="org7d5c075">Keyboard Shortcuts</h3>
-<div class="outline-text-3" id="text-org7d5c075">
+<div id="outline-container-org4264913" class="outline-3">
+<h3 id="org4264913">Keyboard Shortcuts</h3>
+<div class="outline-text-3" id="text-org4264913">
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 
 
@@ -165,9 +165,9 @@ animation mechanism.
 </div>
 </div>
 
-<div id="outline-container-org1577087" class="outline-2">
-<h2 id="org1577087">Syntax</h2>
-<div class="outline-text-2" id="text-org1577087">
+<div id="outline-container-org6c25255" class="outline-2">
+<h2 id="org6c25255">Syntax</h2>
+<div class="outline-text-2" id="text-org6c25255">
 <p>
 The following is a simple <a href="https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form">EBNF Grammar</a> describing a Diane program.  In
 short, a program is a sequence of whitespace-separated commands.
@@ -191,22 +191,23 @@ short, a program is a sequence of whitespace-separated commands.
 </div>
 </div>
 
-<div id="outline-container-org2e78dbe" class="outline-2">
-<h2 id="org2e78dbe">Semantics</h2>
-<div class="outline-text-2" id="text-org2e78dbe">
+<div id="outline-container-orgaf554bf" class="outline-2">
+<h2 id="orgaf554bf">Semantics</h2>
+<div class="outline-text-2" id="text-orgaf554bf">
 <p>
 We take a <b>value</b> (𝕍) to be a integer (ℤ) or a program representing a
 subroutine (ℙ).<sup><a id="fnr.3" class="footref" href="#fn.3" role="doc-backlink">3</a></sup> A <b>configuration</b>,
 written ( S, E, P ), is made up of a stack of integers (S), an
-environment consisting of a list of identifier-value bindings (E), and
-a program as given by the above grammar (P).  The <a href="https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics">operational
-semantics</a> of Diane are given by the reduction rules below.
+environment consisting of a list of collections identifier-value
+bindings (E), and a program as given by the above
+grammar (P).  The <a href="https://en.wikipedia.org/wiki/Operational_semantics#Structural_operational_semantics">operational semantics</a> of Diane are given by the
+reduction rules below.
 </p>
 </div>
 
-<div id="outline-container-org6374a19" class="outline-3">
-<h3 id="org6374a19">Notation for Environments</h3>
-<div class="outline-text-3" id="text-org6374a19">
+<div id="outline-container-orgf3e6779" class="outline-3">
+<h3 id="orgf3e6779">Notation for Environments</h3>
+<div class="outline-text-3" id="text-orgf3e6779">
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 
 
@@ -218,22 +219,22 @@ semantics</a> of Diane are given by the reduction rules below.
 <tbody>
 <tr>
 <td class="org-left">⟨⟩</td>
-<td class="org-left">empty scope</td>
+<td class="org-left">empty collection of bindings</td>
 </tr>
 
 <tr>
-<td class="org-left">G</td>
-<td class="org-left">global scope</td>
+<td class="org-left">𝒢</td>
+<td class="org-left">global bindings</td>
 </tr>
 
 <tr>
 <td class="org-left">L · E</td>
-<td class="org-left">E with shadowing local scope L</td>
+<td class="org-left">E with (shadowing) local bindings L</td>
 </tr>
 
 <tr>
 <td class="org-left">E[X ↦ A]</td>
-<td class="org-left">E with X bound to the value A (in topmost local scope)</td>
+<td class="org-left">E with X bound to the value A (in topmost local bindings)</td>
 </tr>
 
 <tr>
@@ -255,9 +256,9 @@ semantics</a> of Diane are given by the reduction rules below.
 </div>
 </div>
 
-<div id="outline-container-org8a4f05a" class="outline-3">
-<h3 id="org8a4f05a">Stack Manipulation</h3>
-<div class="outline-text-3" id="text-org8a4f05a">
+<div id="outline-container-org0e806ae" class="outline-3">
+<h3 id="org0e806ae">Stack Manipulation</h3>
+<div class="outline-text-3" id="text-org0e806ae">
 <p>
 Several commands are dedicated to manipulating the stack. We can
 </p>
@@ -356,9 +357,9 @@ dup`
 </div>
 </div>
 
-<div id="outline-container-orgcb7184c" class="outline-3">
-<h3 id="orgcb7184c">Arithmetic and Comparisons</h3>
-<div class="outline-text-3" id="text-orgcb7184c">
+<div id="outline-container-orgea6df44" class="outline-3">
+<h3 id="orgea6df44">Arithmetic and Comparisons</h3>
+<div class="outline-text-3" id="text-orgea6df44">
 <p>
 The commands in this section are used to operate on the integers on the
 stack.  We can
@@ -497,9 +498,9 @@ program: `3 4 5 + * 4 swap / 7 < 5 /`
 </script>
 </div>
 </div>
-<div id="outline-container-orgf117095" class="outline-3">
-<h3 id="orgf117095">Subroutines</h3>
-<div class="outline-text-3" id="text-orgf117095">
+<div id="outline-container-org8301bf3" class="outline-3">
+<h3 id="org8301bf3">Subroutines</h3>
+<div class="outline-text-3" id="text-org8301bf3">
 <p>
 A subroutine is just a named program.  We can <i>define</i> subroutines and
 <i>call</i> them.  Defining a subroutine adds a binding in the environment
@@ -555,9 +556,9 @@ def DUPTWO {
 </script>
 </div>
 </div>
-<div id="outline-container-orgbcfba48" class="outline-3">
-<h3 id="orgbcfba48">Variables</h3>
-<div class="outline-text-3" id="text-orgbcfba48">
+<div id="outline-container-org27cdfbd" class="outline-3">
+<h3 id="org27cdfbd">Variables</h3>
+<div class="outline-text-3" id="text-org27cdfbd">
 <p>
 A variable is just a named integer. We can
 </p>
@@ -567,13 +568,12 @@ A variable is just a named integer. We can
 </ul>
 
 <p>
-Variables bindings are available within <i>blocks</i>.  Local blocks can be
-opened and closed via using the delimiters '[' and ']',
+Variables bindings are available within <i>blocks</i> (or globally).  Local
+blocks can be opened and closed using the delimiters '[' and ']',
 respectively.<sup><a id="fnr.6" class="footref" href="#fn.6" role="doc-backlink">6</a></sup>
 Bindings created within a local block are available only within the
 evaluation of that block.  Bindings not created within a local block
-are in the global block and are available anywhere in the program
-after they've been created.
+are available anywhere in the program after they've been created.
 </p>
 
 <pre class="example">
@@ -610,7 +610,7 @@ after they've been created.
 
 
 ───────────────────────────── ( closeLocalErr )
-( S, G, ] P ) ⟶ GlobalClose
+( S, 𝒢, ] P ) ⟶ GlobalClose
 
 </pre>
 
@@ -637,9 +637,9 @@ X Y`
 </div>
 </div>
 
-<div id="outline-container-org9f70979" class="outline-3">
-<h3 id="org9f70979">Conditionals</h3>
-<div class="outline-text-3" id="text-org9f70979">
+<div id="outline-container-org87fb8f8" class="outline-3">
+<h3 id="org87fb8f8">Conditionals</h3>
+<div class="outline-text-3" id="text-org87fb8f8">
 <p>
 Finally, there are if-statements for conditional reasoning.  We also
 include while-loops with the usual semantics (i.e., defined in terms of if-statements).

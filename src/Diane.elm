@@ -82,7 +82,7 @@ errMsg e =
         InvalidCall ident -> "Invalid call, '" ++ ident ++ "' is not a subroutine"
         InvalidLookup ident -> "Invalid lookup, '" ++ ident ++ "' is not an integer"
         DivByZero -> "Division by 0"
-        CloseGlobal -> "Attempted to close global scope"
+        CloseGlobal -> "No block to close"
   in mkErrMsg m
 
 -- VALUES

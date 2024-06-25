@@ -6055,7 +6055,7 @@ var $author$project$Diane$errMsg = function (e) {
 			case 'DivByZero':
 				return 'Division by 0';
 			default:
-				return 'Attempted to close global scope';
+				return 'No block to close';
 		}
 	}();
 	return $author$project$Diane$mkErrMsg(m);
