@@ -13,10 +13,7 @@ button {
 }
 
 #view {
-    /* position: absolute; */
-    /* top: 0; left: 0; */
-    /* width: 100vw; height: 100vh; */
-		width: 100%; height: 100%;
+    width: 100%; height: 100%;
     display: flex;
     flex-direction: row;
 }
@@ -24,7 +21,7 @@ button {
 #left-pane {
     position: relative;
     width: 50%; height: 100%;
-		overflow: hidden;
+    overflow: hidden;
 }
 
 #right-pane {
@@ -41,16 +38,16 @@ button {
 }
 
 #vline {
-		margin: auto;
-		width: 1px;
-		height: 100%;
-		background-color: black;
+    margin: auto;
+    width: 1px;
+    height: 100%;
+    background-color: black;
 }
 
 #editor-window {
     position: relative;
     width: 100%; height: calc(100% - 30px);
-		margin-bottom: 1px;
+    margin-bottom: 1px;
 }
 
 #editor {
@@ -58,9 +55,9 @@ button {
     font-family: monospace; font-size: 18px;
     resize: none;
     padding-top: 10px;
-		padding-left: 10px;
-		padding-right: 60px;
-		padding-bottom: 0;
+    padding-left: 10px;
+    padding-right: 60px;
+    padding-bottom: 0;
     box-sizing: border-box;
     border-style: none;
 }
@@ -86,28 +83,28 @@ button {
 }
 
 #function-body {
-		z-index: 1;
-		position: absolute;
-		top: 0;
-		right: 20px;
-		padding: 5px;
-		background-color: whitesmoke;
-		border-style: solid;
-		border-color: black;
-		border-width: 1px;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right: 20px;
+    padding: 5px;
+    background-color: whitesmoke;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
 }
 
 
 #function #function-body {
-		display: none;
+    display: none;
 }
 
 #function:hover {
-		background-color: whitesmoke;
+    background-color: whitesmoke;
 }
 
 #function:hover #function-body {
-		display: block;
+    display: block;
 }
 
 #clear-data {
@@ -127,11 +124,11 @@ button {
 }
 
 #hline {
-		margin-top: 5px;
-		margin-left: -5px;
-		width: calc(100% + 5px);
-		height: 1px;
-		background-color: black;
+    margin-top: 5px;
+    margin-left: -5px;
+    width: calc(100% + 5px);
+    height: 1px;
+    background-color: black;
 }
 
 #console-pane {
@@ -147,7 +144,7 @@ button {
 
 #console {
     margin: 10px;
-		padding-right: 60px;
+    padding-right: 60px;
 }
 
 #clear-console {
